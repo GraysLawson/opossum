@@ -1,0 +1,19 @@
+# Go dependencies
+/vendor/
+*.exe
+*.log
+*.test
+
+# Node dependencies
+/website/node_modules
+/website/.next
+/website/out
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Fly.io
+.fly/
