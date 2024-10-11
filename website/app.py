@@ -5,6 +5,7 @@ import redis
 import json
 from datetime import datetime
 from functools import wraps
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -37,16 +38,19 @@ def index():
 
 @app.route("/login")
 def login():
-    return discord.create_session()
+    return discord.create_session(scope=["identify"])
 
 @app.route("/callback")
 def callback():
     discord.callback()
+    user = User()
+    user.id = discord.fetch_user().id
+    login_user(user)
     return redirect(url_for("index"))
 
 @app.route("/logout")
 def logout():
-    discord.revoke()
+    logout_user()
     return redirect(url_for("index"))
 
 @app.route('/logs')
@@ -118,3 +122,15 @@ def redirect_unauthorized(e):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+class User(UserMixin):
+    pass
+
+@login_manager.user_loader
+def load_user(user_id):
+    user = User()
+    user.id = user_id
+    return user
