@@ -9,7 +9,7 @@ from logger import setup_logger
 # Set up the logger
 logger = setup_logger()
 
-def main():
+async def main():
     logger.info("Starting bot...")
     intents = discord.Intents.default()
     intents.message_content = True
@@ -18,16 +18,12 @@ def main():
 
     logger.info(f"Bot version: {VERSION}")
 
-    bot.add_cog(BotEvents(bot))
-    bot.add_cog(BotCommands(bot))
-
-    logger.debug("This is a debug message")
-    logger.info("This is an info message")
-    logger.warning("This is a warning message")
-    logger.error("This is an error message")
+    await bot.add_cog(BotEvents(bot))
+    await bot.add_cog(BotCommands(bot))
 
     logger.info("Running bot...")
-    bot.run(DISCORD_TOKEN)
+    await bot.start(DISCORD_TOKEN)
 
 if __name__ == '__main__':
-    main()
+    import asyncio
+    asyncio.run(main())

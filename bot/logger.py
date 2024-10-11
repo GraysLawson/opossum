@@ -32,22 +32,24 @@ def setup_logger():
     logger = logging.getLogger('bot_logger')
     logger.setLevel(logging.DEBUG)
 
+    # Always add console handler for local development
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     console_handler.setFormatter(console_format)
-
-    try:
-        redis_handler = RedisHandler()
-        redis_handler.setLevel(logging.DEBUG)
-        redis_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        redis_handler.setFormatter(redis_format)
-        logger.addHandler(redis_handler)
-        print("Successfully added RedisHandler to logger", file=sys.stderr)
-    except Exception as e:
-        print(f"Error setting up RedisHandler: {str(e)}", file=sys.stderr)
-
     logger.addHandler(console_handler)
+
+    # Only add Redis handler if REDIS_URL is set (production environment)
+    if os.environ.get('REDIS_URL'):
+        try:
+            redis_handler = RedisHandler()
+            redis_handler.setLevel(logging.DEBUG)
+            redis_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            redis_handler.setFormatter(redis_format)
+            logger.addHandler(redis_handler)
+            print("Successfully added RedisHandler to logger", file=sys.stderr)
+        except Exception as e:
+            print(f"Error setting up RedisHandler: {str(e)}", file=sys.stderr)
 
     return logger
 
