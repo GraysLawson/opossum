@@ -1,5 +1,5 @@
 import openai
-from config import OPENAI_API_KEY
+from config import OPENAI_API_KEY, OPENAI_MODEL
 from logger import setup_logger
 
 logger = setup_logger()
@@ -8,7 +8,7 @@ client = openai.OpenAI(api_key=OPENAI_API_KEY)
 def generate_image_description(image_url):
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=OPENAI_MODEL,
             messages=[
                 {
                     "role": "user",

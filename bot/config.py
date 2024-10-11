@@ -5,6 +5,7 @@ OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
 VERSION = os.environ['BOT_VERSION']
 ACTIVE_CHANNELS = os.environ.get('ACTIVE_CHANNELS', '').split(',')
 REDIS_URL = os.environ['REDIS_URL']
+OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
 
 if not DISCORD_TOKEN:
     raise ValueError("Discord token not provided")

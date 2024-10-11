@@ -9,6 +9,12 @@
     <input type="password" id="openai_api_key" name="openai_api_key" value="{{ openai_api_key }}"><br><br>
     <label for="active_channels">Active Channels (comma-separated IDs):</label><br>
     <input type="text" id="active_channels" name="active_channels" value="{{ active_channels }}"><br><br>
+    <label for="openai_model">OpenAI Model:</label><br>
+    <select id="openai_model" name="openai_model">
+        {% for model in available_models %}
+            <option value="{{ model }}" {% if model == openai_model %}selected{% endif %}>{{ model }}</option>
+        {% endfor %}
+    </select><br><br>
     <input type="submit" value="Save">
 </form>
 {% endblock %}
