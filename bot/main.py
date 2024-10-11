@@ -21,6 +21,11 @@ def main():
     bot.add_cog(BotEvents(bot))
     bot.add_cog(BotCommands(bot))
 
+    logger.debug("This is a debug message")
+    logger.info("This is an info message")
+    logger.warning("This is a warning message")
+    logger.error("This is an error message")
+
     logger.info("Running bot...")
     bot.run(DISCORD_TOKEN)
 
