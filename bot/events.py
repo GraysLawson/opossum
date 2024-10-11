@@ -1,9 +1,11 @@
 import discord
 from discord.ext import commands
 from discord import ButtonStyle, ui
-from config import ACTIVE_CHANNELS
+from config import ACTIVE_CHANNELS, REDIS_URL
 from utils import generate_image_description
 from logger import logger
+import redis
+import json
 
 class DescribeImageButton(ui.Button):
     def __init__(self, image_url):
@@ -18,11 +20,25 @@ class DescribeImageButton(ui.Button):
 class BotEvents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.redis_client = redis.Redis.from_url(REDIS_URL)
 
     @commands.Cog.listener()
     async def on_ready(self):
         logger.info(f"{self.bot.user.name} has connected to Discord.")
         logger.info(f"Version: {self.bot.version}")
+        await self.update_channel_list()
+
+    async def update_channel_list(self):
+        channels = []
+        for guild in self.bot.guilds:
+            for channel in guild.text_channels:
+                channels.append({
+                    'id': str(channel.id),
+                    'name': channel.name,
+                    'guild_name': guild.name
+                })
+        self.redis_client.set('discord_channels', json.dumps(channels))
+        logger.info(f"Updated channel list in Redis with {len(channels)} channels")
 
     @commands.Cog.listener()
     async def on_message(self, message):

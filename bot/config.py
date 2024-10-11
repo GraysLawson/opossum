@@ -16,4 +16,4 @@ if not OPENAI_API_KEY:
 if not ACTIVE_CHANNELS or ACTIVE_CHANNELS == ['']:
     ACTIVE_CHANNELS = None  # Defaults to all channels
 else:
-    ACTIVE_CHANNELS = [int(ch.strip()) for ch in ACTIVE_CHANNELS if ch.strip()]
+    ACTIVE_CHANNELS = [int(ch.strip()) for ch in ACTIVE_CHANNELS.split(',') if ch.strip()]

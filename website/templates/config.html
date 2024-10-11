@@ -7,8 +7,13 @@
     <input type="password" id="discord_token" name="discord_token" value="{{ discord_token }}"><br><br>
     <label for="openai_api_key">OpenAI API Key:</label><br>
     <input type="password" id="openai_api_key" name="openai_api_key" value="{{ openai_api_key }}"><br><br>
-    <label for="active_channels">Active Channels (comma-separated IDs):</label><br>
-    <input type="text" id="active_channels" name="active_channels" value="{{ active_channels }}"><br><br>
+    <label>Active Channels:</label><br>
+    {% for channel in channels %}
+        <input type="checkbox" id="channel_{{ channel.id }}" name="active_channels" value="{{ channel.id }}"
+               {% if channel.id in active_channels %}checked{% endif %}>
+        <label for="channel_{{ channel.id }}">{{ channel.guild_name }} - {{ channel.name }}</label><br>
+    {% endfor %}
+    <br>
     <label for="openai_model">OpenAI Model:</label><br>
     <select id="openai_model" name="openai_model">
         {% for model in available_models %}

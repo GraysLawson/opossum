@@ -41,30 +41,34 @@ def config():
     if request.method == 'POST':
         discord_token = request.form.get('discord_token')
         openai_api_key = request.form.get('openai_api_key')
-        active_channels = request.form.get('active_channels')
+        active_channels = request.form.getlist('active_channels')
         openai_model = request.form.get('openai_model')
 
         os.environ['DISCORD_TOKEN'] = discord_token
         os.environ['OPENAI_API_KEY'] = openai_api_key
-        os.environ['ACTIVE_CHANNELS'] = active_channels
+        os.environ['ACTIVE_CHANNELS'] = ','.join(active_channels) if active_channels else ''
         os.environ['OPENAI_MODEL'] = openai_model
 
         return redirect(url_for('config'))
     else:
         discord_token = os.getenv('DISCORD_TOKEN', '')
         openai_api_key = os.getenv('OPENAI_API_KEY', '')
-        active_channels = os.getenv('ACTIVE_CHANNELS', '')
+        active_channels = os.getenv('ACTIVE_CHANNELS', '').split(',')
         openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
         
-        # Fetch available OpenAI models
-        available_models = ['gpt-4o-mini', 'gpt-4o', 'chatgpt-4o-latest']  # Add more as needed
+        redis_client = get_redis_connection()
+        channels_json = redis_client.get('discord_channels')
+        channels = json.loads(channels_json) if channels_json else []
+
+        available_models = ['gpt-4o-mini', 'gpt-4o', 'chatgpt-4o-latest']
         
         return render_template('config.html', 
                                discord_token=discord_token, 
                                openai_api_key=openai_api_key, 
                                active_channels=active_channels,
                                openai_model=openai_model,
-                               available_models=available_models)
+                               available_models=available_models,
+                               channels=channels)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
