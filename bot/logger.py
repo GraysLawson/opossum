@@ -1,44 +1,28 @@
 import logging
 import os
-import psycopg2
+import redis
 import sys
+import json
 
-class DatabaseHandler(logging.Handler):
+class RedisHandler(logging.Handler):
     def __init__(self):
         super().__init__()
         try:
-            self.conn = psycopg2.connect(os.environ['DATABASE_URL'])
-            self.cursor = self.conn.cursor()
-            print("Successfully connected to the database", file=sys.stderr)
-            self.create_table()
+            self.redis_client = redis.Redis.from_url(os.environ['REDIS_URL'])
+            print("Successfully connected to Redis", file=sys.stderr)
         except Exception as e:
-            print(f"Error connecting to database: {str(e)}", file=sys.stderr)
-            raise
-
-    def create_table(self):
-        try:
-            self.cursor.execute("""
-                CREATE TABLE IF NOT EXISTS bot_logs (
-                    id SERIAL PRIMARY KEY,
-                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    level VARCHAR(10),
-                    message TEXT
-                )
-            """)
-            self.conn.commit()
-            print("Successfully created or verified bot_logs table", file=sys.stderr)
-        except Exception as e:
-            print(f"Error creating table: {str(e)}", file=sys.stderr)
+            print(f"Error connecting to Redis: {str(e)}", file=sys.stderr)
             raise
 
     def emit(self, record):
         log_entry = self.format(record)
         try:
-            self.cursor.execute(
-                "INSERT INTO bot_logs (level, message) VALUES (%s, %s)",
-                (record.levelname, log_entry)
-            )
-            self.conn.commit()
+            log_data = {
+                'timestamp': record.created,
+                'level': record.levelname,
+                'message': log_entry
+            }
+            self.redis_client.lpush('bot_logs', json.dumps(log_data))
             print(f"Successfully inserted log: {log_entry}", file=sys.stderr)
         except Exception as e:
             print(f"Error inserting log: {str(e)}", file=sys.stderr)
@@ -48,22 +32,20 @@ def setup_logger():
     logger = logging.getLogger('bot_logger')
     logger.setLevel(logging.DEBUG)
 
-    # Console handler
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     console_handler.setFormatter(console_format)
 
-    # Database handler
     try:
-        db_handler = DatabaseHandler()
-        db_handler.setLevel(logging.DEBUG)
-        db_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        db_handler.setFormatter(db_format)
-        logger.addHandler(db_handler)
-        print("Successfully added DatabaseHandler to logger", file=sys.stderr)
+        redis_handler = RedisHandler()
+        redis_handler.setLevel(logging.DEBUG)
+        redis_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        redis_handler.setFormatter(redis_format)
+        logger.addHandler(redis_handler)
+        print("Successfully added RedisHandler to logger", file=sys.stderr)
     except Exception as e:
-        print(f"Error setting up DatabaseHandler: {str(e)}", file=sys.stderr)
+        print(f"Error setting up RedisHandler: {str(e)}", file=sys.stderr)
 
     logger.addHandler(console_handler)
 

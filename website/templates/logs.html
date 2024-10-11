@@ -4,7 +4,8 @@
 <h2>Bot Logs</h2>
 {% if error %}
     <p class="error">{{ error }}</p>
-{% elif logs %}
+{% endif %}
+{% if logs %}
     <table>
         <tr>
             <th>Timestamp</th>

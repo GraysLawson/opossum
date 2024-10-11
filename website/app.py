@@ -1,27 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
-import psycopg2
-import psycopg2.extras
+import redis
+import json
 
 app = Flask(__name__)
-app = Flask(__name__)
 
-DATABASE_URL = os.getenv('DATABASE_URL')
+REDIS_URL = os.getenv('REDIS_URL')
 
-def get_db_connection():
-    conn = psycopg2.connect(DATABASE_URL)
-    conn.cursor_factory = psycopg2.extras.DictCursor
-    with conn.cursor() as cur:
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS bot_logs (
-                id SERIAL PRIMARY KEY,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                level VARCHAR(10),
-                message TEXT
-            )
-        """)
-        conn.commit()
-    return conn
+if not REDIS_URL:
+    app.logger.error("REDIS_URL is not set")
+    raise ValueError("REDIS_URL environment variable is not set")
+
+def get_redis_connection():
+    return redis.Redis.from_url(REDIS_URL)
 
 @app.route('/')
 def index():
@@ -30,16 +21,20 @@ def index():
 @app.route('/logs')
 def logs():
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('SELECT * FROM bot_logs ORDER BY timestamp DESC LIMIT 100')
-        logs = cur.fetchall()
-        cur.close()
-        conn.close()
+        redis_client = get_redis_connection()
+        logs_data = redis_client.lrange('bot_logs', 0, 99)  # Get the latest 100 logs
+        logs = [json.loads(log) for log in logs_data]
+        app.logger.info(f"Retrieved {len(logs)} logs from Redis")
         return render_template('logs.html', logs=logs)
+    except redis.exceptions.ConnectionError as e:
+        app.logger.error(f"Redis connection error: {str(e)}")
+        return render_template('logs.html', logs=[], error="Failed to connect to Redis server.")
+    except json.JSONDecodeError as e:
+        app.logger.error(f"JSON decode error: {str(e)}")
+        return render_template('logs.html', logs=[], error="Error parsing log data.")
     except Exception as e:
-        app.logger.error(f"An error occurred while fetching logs: {str(e)}")
-        return render_template('logs.html', logs=[], error="An error occurred while fetching logs.")
+        app.logger.error(f"An unexpected error occurred while fetching logs: {str(e)}")
+        return render_template('logs.html', logs=[], error="An unexpected error occurred while fetching logs.")
 
 @app.route('/config', methods=['GET', 'POST'])
 def config():
@@ -48,13 +43,9 @@ def config():
         openai_api_key = request.form.get('openai_api_key')
         active_channels = request.form.get('active_channels')
 
-        # Update the environment variables accordingly
         os.environ['DISCORD_TOKEN'] = discord_token
         os.environ['OPENAI_API_KEY'] = openai_api_key
         os.environ['ACTIVE_CHANNELS'] = active_channels
-
-        # You may want to persist these changes in a safe way (e.g., database or config file)
-        # For security reasons, avoid storing sensitive information in plain text
 
         return redirect(url_for('config'))
     else:
