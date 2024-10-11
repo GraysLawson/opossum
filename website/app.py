@@ -45,16 +45,20 @@ def callback():
     try:
         discord.callback()
         user_data = discord.fetch_user()
-        user = User(user_data.id)
+        user = User()
+        user.id = user_data.id
         login_user(user)
+        session['user_id'] = user.id  # Store user_id in session
         return redirect(url_for("index"))
     except Exception as e:
         app.logger.error(f"Error in callback: {str(e)}")
         return redirect(url_for("index"))
 
 @app.route("/logout")
+@login_required
 def logout():
     logout_user()
+    session.clear()  # Clear the entire session
     return redirect(url_for("index"))
 
 @app.route('/logs')
@@ -133,8 +137,21 @@ login_manager.init_app(app)
 class User(UserMixin):
     pass
 
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+
+# ... (existing code)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+class User(UserMixin):
+    def __init__(self, id=None):
+        self.id = id
+
 @login_manager.user_loader
 def load_user(user_id):
-    user = User()
-    user.id = user_id
+    user = User(user_id)
     return user
+
+# ... (rest of the code)
