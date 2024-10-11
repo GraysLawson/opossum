@@ -1,8 +1,19 @@
 import discord
 from discord.ext import commands
+from discord import ButtonStyle, ui
 from config import ACTIVE_CHANNELS
 from utils import generate_image_description
 from logger import logger
+
+class DescribeImageButton(ui.Button):
+    def __init__(self, image_url):
+        super().__init__(style=ButtonStyle.primary, label="Describe Image")
+        self.image_url = image_url
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        description = generate_image_description(self.image_url)
+        await interaction.followup.send(f"Image Description: {description}")
 
 class BotEvents(commands.Cog):
     def __init__(self, bot):
@@ -30,7 +41,9 @@ class BotEvents(commands.Cog):
             for attachment in message.attachments:
                 if any(attachment.filename.lower().endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif']):
                     logger.info(f"Image uploaded by {message.author}: {attachment.filename}")
-                    await message.add_reaction('🔍')
+                    view = ui.View()
+                    view.add_item(DescribeImageButton(attachment.url))
+                    await message.reply("Click the button to get a description of the image:", view=view)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
