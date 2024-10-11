@@ -11,6 +11,25 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r bot/requirements.txt
+        pip install -r website/requirements.txt
+
     - name: Set up Fly.io CLI
       uses: superfly/flyctl-actions/setup-flyctl@master
 
@@ -31,6 +50,6 @@ jobs:
     - name: Update Bot Version
       run: |
         NEW_VERSION=$(date +%Y.%m.%d.%H%M)
-        flyctl secrets set BOT_VERSION=$NEW_VERSION -a opossum-bot
+        flyctl secrets set BOT_VERSION=$NEW_VERSION
       env:
         FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
