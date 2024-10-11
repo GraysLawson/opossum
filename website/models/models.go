@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"os"
 
 	"github.com/GraysLawson/opossum/website/utils"
 	_ "github.com/lib/pq"
@@ -9,9 +10,9 @@ import (
 
 var db *sql.DB
 
-func InitDB(databaseURL string) {
+func InitDB() {
 	var err error
-	db, err = sql.Open("postgres", databaseURL)
+	db, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		utils.GlobalLogger.Fatal("Cannot connect to database:", err)
 	}

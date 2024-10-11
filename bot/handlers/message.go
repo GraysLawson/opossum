@@ -12,7 +12,7 @@ var cfg *config.Config
 
 func InitializeDiscord(configuration *config.Config) (*discordgo.Session, error) {
 	cfg = configuration
-	dg, err := discordgo.New("Bot " + cfg.BotToken)
+	dg, err := discordgo.New("Bot " + cfg.BotToken) // Note: cfg.BotToken now contains the DISCORD_BOT_KEY
 	if err != nil {
 		return nil, err
 	}

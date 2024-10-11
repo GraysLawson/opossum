@@ -12,12 +12,12 @@ import (
 func main() {
 	utils.InitLogger()
 
-	cfg, err := config.LoadConfig()
+	_, err := config.LoadConfig()
 	if err != nil {
 		utils.GlobalLogger.Fatal("Cannot load config:", err)
 	}
 
-	models.InitDB(cfg.DatabaseURL)
+	models.InitDB()
 
 	// Serve static files
 	fs := http.FileServer(http.Dir("../static"))

@@ -3,8 +3,6 @@ package config
 import (
 	"os"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -12,16 +10,12 @@ type Config struct {
 	OpenAIAPIKey   string
 	ActiveChannels []string
 	Version        int
+	DatabaseURL    string
 }
 
 var cfg *Config
 
 func LoadConfig() (*Config, error) {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		return nil, err
-	}
-
 	activeChannels := []string{}
 	channels := os.Getenv("ACTIVE_CHANNELS")
 	if channels != "" {
@@ -33,10 +27,11 @@ func LoadConfig() (*Config, error) {
 	version := 1 // This should be auto-incremented during deployment
 
 	cfg = &Config{
-		BotToken:       os.Getenv("DISCORD_BOT_TOKEN"),
+		BotToken:       os.Getenv("DISCORD_BOT_KEY"),
 		OpenAIAPIKey:   os.Getenv("OPENAI_API_KEY"),
 		ActiveChannels: activeChannels,
 		Version:        version,
+		DatabaseURL:    os.Getenv("DATABASE_URL"),
 	}
 
 	return cfg, nil

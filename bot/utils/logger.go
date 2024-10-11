@@ -30,3 +30,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 	l.Output(2, "FATAL: "+fmt.Sprint(v...))
 	os.Exit(1)
 }
+
+func (l *Logger) Debug(v ...interface{}) {
+	l.Output(2, "DEBUG: "+fmt.Sprint(v...))
+}
