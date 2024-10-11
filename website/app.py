@@ -6,13 +6,25 @@ import json
 from datetime import datetime
 from functools import wraps
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config["DISCORD_CLIENT_ID"] = os.getenv("DISCORD_CLIENT_ID")
 app.config["DISCORD_CLIENT_SECRET"] = os.getenv("DISCORD_CLIENT_SECRET")
 app.config["DISCORD_REDIRECT_URI"] = os.getenv("DISCORD_REDIRECT_URI")
-app.config['OAUTHLIB_INSECURE_TRANSPORT'] = 0  # Enforce HTTPS
+
+# Determine environment
+ENV = os.getenv("FLASK_ENV", "production")
+
+if ENV == "development":
+    # Allow insecure transport for development
+    app.config['OAUTHLIB_INSECURE_TRANSPORT'] = 1
+else:
+    # Enforce HTTPS in production
+    app.config['OAUTHLIB_INSECURE_TRANSPORT'] = 0
+    # Apply ProxyFix to handle reverse proxy headers
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 discord = DiscordOAuth2Session(app)
 
@@ -25,7 +37,7 @@ if not REDIS_URL:
 def get_redis_connection():
     return redis.Redis.from_url(REDIS_URL)
 
-def login_required(f):
+def login_required_decorator(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not discord.authorized:
@@ -56,14 +68,14 @@ def callback():
         return redirect(url_for("index"))
 
 @app.route("/logout")
-@login_required
+@login_required_decorator
 def logout():
     logout_user()
     session.clear()  # Clear the entire session
     return redirect(url_for("index"))
 
 @app.route('/logs')
-@login_required
+@login_required_decorator
 def logs():
     try:
         redis_client = get_redis_connection()
@@ -82,7 +94,7 @@ def logs():
         return render_template('logs.html', logs=[], error="An unexpected error occurred while fetching logs.")
 
 @app.route('/config', methods=['GET', 'POST'])
-@login_required
+@login_required_decorator
 def config():
     if request.method == 'POST':
         discord_token = request.form.get('discord_token')
@@ -134,16 +146,6 @@ if __name__ == "__main__":
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-class User(UserMixin):
-    pass
-
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-
-# ... (existing code)
-
-login_manager = LoginManager()
-login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin):
@@ -154,5 +156,3 @@ class User(UserMixin):
 def load_user(user_id):
     user = User(user_id)
     return user
-
-# ... (rest of the code)
