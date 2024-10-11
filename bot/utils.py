@@ -1,8 +1,7 @@
 import openai
 from config import OPENAI_API_KEY, OPENAI_MODEL
-from logger import setup_logger
+from logger import logger
 
-logger = setup_logger()
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_image_description(image_url):
