@@ -1,0 +1,36 @@
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Fly.io CLI
+      uses: superfly/flyctl-actions/setup-flyctl@master
+
+    - name: Deploy Bot
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      run: |
+        cd bot
+        flyctl deploy --remote-only
+
+    - name: Deploy Website
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      run: |
+        cd website
+        flyctl deploy --remote-only
+
+    - name: Update Bot Version
+      run: |
+        NEW_VERSION=$(date +%Y.%m.%d.%H%M)
+        flyctl secrets set BOT_VERSION=$NEW_VERSION
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
