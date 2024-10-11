@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import redis
 import json
+import datetime
 
 app = Flask(__name__)
 
@@ -43,6 +44,15 @@ def config():
         openai_api_key = request.form.get('openai_api_key')
         active_channels = request.form.getlist('active_channels')
         openai_model = request.form.get('openai_model')
+
+        # Log configuration changes
+        redis_client = get_redis_connection()
+        log_data = {
+            'timestamp': datetime.now().isoformat(),
+            'level': 'INFO',
+            'message': f"Configuration updated: Discord Token: {'*' * 10}, OpenAI API Key: {'*' * 10}, Active Channels: {active_channels}, OpenAI Model: {openai_model}"
+        }
+        redis_client.lpush('bot_logs', json.dumps(log_data))
 
         os.environ['DISCORD_TOKEN'] = discord_token
         os.environ['OPENAI_API_KEY'] = openai_api_key
