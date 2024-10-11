@@ -5,11 +5,12 @@ import (
 	"net/http"
 )
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("../templates/index.html")
-	if err != nil {
-		http.Error(w, "Unable to load template", http.StatusInternalServerError)
-		return
+func HomeHandler(templates *template.Template) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := templates.ExecuteTemplate(w, "index.html", nil)
+		if err != nil {
+			http.Error(w, "Unable to load template", http.StatusInternalServerError)
+			return
+		}
 	}
-	tmpl.Execute(w, nil)
 }

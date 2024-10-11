@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"net/http"
 
 	"github.com/GraysLawson/opossum/website/config"
@@ -20,12 +21,19 @@ func main() {
 	models.InitDB()
 
 	// Serve static files
-	fs := http.FileServer(http.Dir("../static"))
+	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	http.HandleFunc("/", handlers.HomeHandler)
-	http.HandleFunc("/config", handlers.ConfigHandler)
-	http.HandleFunc("/logs", handlers.LogsHandler)
+	// Load templates
+	templates, err := template.ParseGlob("templates/*.html")
+	if err != nil {
+		utils.GlobalLogger.Fatal("Unable to parse templates:", err)
+	}
+
+	// Update handlers to use parsed templates
+	http.HandleFunc("/", handlers.HomeHandler(templates))
+	http.HandleFunc("/config", handlers.ConfigHandler(templates))
+	http.HandleFunc("/logs", handlers.LogsHandler(templates))
 
 	utils.GlobalLogger.Info("Website is running on port 8080")
 	err = http.ListenAndServe(":8080", nil)

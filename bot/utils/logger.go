@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/GraysLawson/opossum/website/models"
 )
 
 type Logger struct {
@@ -18,19 +20,27 @@ func InitLogger() {
 	}
 }
 
+func (l *Logger) Debug(v ...interface{}) {
+	message := fmt.Sprint(v...)
+	l.Output(2, "DEBUG: "+message)
+	models.AddBotLog(message, "DEBUG")
+}
+
 func (l *Logger) Info(v ...interface{}) {
-	l.Output(2, "INFO: "+fmt.Sprint(v...))
+	message := fmt.Sprint(v...)
+	l.Output(2, "INFO: "+message)
+	models.AddBotLog(message, "INFO")
 }
 
 func (l *Logger) Error(v ...interface{}) {
-	l.Output(2, "ERROR: "+fmt.Sprint(v...))
+	message := fmt.Sprint(v...)
+	l.Output(2, "ERROR: "+message)
+	models.AddBotLog(message, "ERROR")
 }
 
 func (l *Logger) Fatal(v ...interface{}) {
-	l.Output(2, "FATAL: "+fmt.Sprint(v...))
+	message := fmt.Sprint(v...)
+	l.Output(2, "FATAL: "+message)
+	models.AddBotLog(message, "FATAL")
 	os.Exit(1)
-}
-
-func (l *Logger) Debug(v ...interface{}) {
-	l.Output(2, "DEBUG: "+fmt.Sprint(v...))
 }
