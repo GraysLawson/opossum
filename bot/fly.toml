@@ -16,13 +16,7 @@ primary_region = 'iad'
   auto_rollback = true
   enable_consul = true
 
-[http_service]
-  internal_port = 8080
-  force_https = true
-  auto_stop_machines = 'stop'
-  auto_start_machines = true
-  min_machines_running = 1
-  processes = ['app']
+# Removed [http_service] block since the bot does not handle HTTP requests
 
 [[vm]]
   memory = '1gb'

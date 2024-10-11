@@ -9,7 +9,14 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, curren
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+
+# Use the SECRET_KEY from environment variables
+secret_key = os.getenv('SECRET_KEY')
+if not secret_key:
+    app.logger.error("SECRET_KEY is not set")
+    raise ValueError("SECRET_KEY environment variable is not set")
+
+app.secret_key = secret_key
 app.config["DISCORD_CLIENT_ID"] = os.getenv("DISCORD_CLIENT_ID")
 app.config["DISCORD_CLIENT_SECRET"] = os.getenv("DISCORD_CLIENT_SECRET")
 app.config["DISCORD_REDIRECT_URI"] = os.getenv("DISCORD_REDIRECT_URI")
