@@ -1,0 +1,16 @@
+version: "3"
+services:
+  bot:
+    build: .
+    command: ./bot
+    volumes:
+      - .:/app
+    restart: unless-stopped
+  website:
+    build: .
+    command: ./website
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    restart: unless-stopped
