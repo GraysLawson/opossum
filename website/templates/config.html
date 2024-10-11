@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Configuration</h2>
+<form method="post">
+    <label for="discord_token">Discord Token:</label><br>
+    <input type="password" id="discord_token" name="discord_token" value="{{ discord_token }}"><br><br>
+    <label for="openai_api_key">OpenAI API Key:</label><br>
+    <input type="password" id="openai_api_key" name="openai_api_key" value="{{ openai_api_key }}"><br><br>
+    <label for="active_channels">Active Channels (comma-separated IDs):</label><br>
+    <input type="text" id="active_channels" name="active_channels" value="{{ active_channels }}"><br><br>
+    <input type="submit" value="Save">
+</form>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Logs</h2>
+<h3>Bot Logs</h3>
+{% if BotLogs %}
+    <ul>
+    {% for log in BotLogs %}
+        <li>[{{ log.CreatedAt }}] [{{ log.Severity }}] {{ log.Log }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No bot logs available.</p>
+{% endif %}
+
+<h3>Website Logs</h3>
+{% if WebsiteLogs %}
+    <ul>
+    {% for log in WebsiteLogs %}
+        <li>[{{ log.CreatedAt }}] [{{ log.Severity }}] {{ log.Log }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No website logs available.</p>
+{% endif %}
+
+<form method="get">
+    <label for="severity">Filter by severity:</label>
+    <select name="severity" id="severity">
+        <option value="">All</option>
+        <option value="debug" {% if Severity == 'debug' %}selected{% endif %}>Debug</option>
+        <option value="info" {% if Severity == 'info' %}selected{% endif %}>Info</option>
+        <option value="warning" {% if Severity == 'warning' %}selected{% endif %}>Warning</option>
+        <option value="error" {% if Severity == 'error' %}selected{% endif %}>Error</option>
+    </select>
+    <input type="submit" value="Filter">
+</form>
+{% endblock %}

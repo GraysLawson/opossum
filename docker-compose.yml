@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  bot:
+    build: ./bot
+    restart: always
+    environment:
+      - DISCORD_TOKEN
+      - OPENAI_API_KEY
+      - ACTIVE_CHANNELS
+      - BOT_VERSION
+    depends_on:
+      - db
+
+  website:
+    build: ./website
+    restart: always
+    ports:
+      - "80:8080"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+      - DISCORD_TOKEN
+      - OPENAI_API_KEY
+      - ACTIVE_CHANNELS
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
