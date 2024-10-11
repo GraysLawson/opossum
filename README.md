@@ -1,4 +1,4 @@
-# Discord Bot and Monitoring Website
+# Discord Bot and Monitoring Websites
 
 ## Overview
 
