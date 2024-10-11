@@ -42,11 +42,15 @@ def login():
 
 @app.route("/callback")
 def callback():
-    discord.callback()
-    user = User()
-    user.id = discord.fetch_user().id
-    login_user(user)
-    return redirect(url_for("index"))
+    try:
+        discord.callback()
+        user = User()
+        user.id = discord.fetch_user().id
+        login_user(user)
+        return redirect(url_for("index"))
+    except Exception as e:
+        app.logger.error(f"Error in callback: {str(e)}")
+        return redirect(url_for("index"))
 
 @app.route("/logout")
 def logout():
