@@ -21,7 +21,8 @@ class DescribeImageButton(ui.Button):
             await message.edit(content=text)
 
         try:
-            description = await asyncio.to_thread(generate_image_description, self.image_url, update_message)
+            # Await the asynchronous function directly
+            description = await generate_image_description(self.image_url, update_message)
             await message.edit(content=f"Image Description: {description}")
         except Exception as e:
             logger.error(f"Error in DescribeImageButton callback: {str(e)}")
@@ -80,6 +81,7 @@ class BotEvents(commands.Cog):
             for attachment in reaction.message.attachments:
                 if any(attachment.filename.lower().endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif']):
                     logger.info(f"Generating image description for {attachment.filename}")
-                    description = generate_image_description(attachment.url)
+                    # Await the asynchronous function
+                    description = await generate_image_description(attachment.url, lambda x: asyncio.sleep(0))
                     await reaction.message.channel.send(f"Image Description: {description}")
                     break
