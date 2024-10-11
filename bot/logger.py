@@ -23,7 +23,6 @@ class RedisHandler(logging.Handler):
                 'message': log_entry
             }
             self.redis_client.lpush('bot_logs', json.dumps(log_data))
-            print(f"Successfully inserted log: {log_entry}", file=sys.stderr)
         except Exception as e:
             print(f"Error inserting log: {str(e)}", file=sys.stderr)
             self.handleError(record)
@@ -32,15 +31,9 @@ def setup_logger():
     logger = logging.getLogger('bot_logger')
     logger.setLevel(logging.DEBUG)
 
-    # Always add console handler for local development
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    console_handler.setFormatter(console_format)
-    logger.addHandler(console_handler)
-
-    # Only add Redis handler if REDIS_URL is set (production environment)
+    # Check if we're in production (REDIS_URL is set)
     if os.environ.get('REDIS_URL'):
+        # Production: Use only Redis handler
         try:
             redis_handler = RedisHandler()
             redis_handler.setLevel(logging.DEBUG)
@@ -50,6 +43,13 @@ def setup_logger():
             print("Successfully added RedisHandler to logger", file=sys.stderr)
         except Exception as e:
             print(f"Error setting up RedisHandler: {str(e)}", file=sys.stderr)
+    else:
+        # Development: Use only console handler
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        console_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        console_handler.setFormatter(console_format)
+        logger.addHandler(console_handler)
 
     return logger
 
