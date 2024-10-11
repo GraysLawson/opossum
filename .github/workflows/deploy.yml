@@ -31,6 +31,6 @@ jobs:
     - name: Update Bot Version
       run: |
         NEW_VERSION=$(date +%Y.%m.%d.%H%M)
-        flyctl secrets set BOT_VERSION=$NEW_VERSION
+        flyctl secrets set BOT_VERSION=$NEW_VERSION -a opossum-bot
       env:
         FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
