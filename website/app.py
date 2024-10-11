@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import os
 import redis
@@ -12,6 +12,7 @@ app.secret_key = os.urandom(24)
 app.config["DISCORD_CLIENT_ID"] = os.getenv("DISCORD_CLIENT_ID")
 app.config["DISCORD_CLIENT_SECRET"] = os.getenv("DISCORD_CLIENT_SECRET")
 app.config["DISCORD_REDIRECT_URI"] = os.getenv("DISCORD_REDIRECT_URI")
+app.config['OAUTHLIB_INSECURE_TRANSPORT'] = 0  # Enforce HTTPS
 
 discord = DiscordOAuth2Session(app)
 
