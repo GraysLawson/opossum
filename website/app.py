@@ -26,6 +26,11 @@ else:
     # Apply ProxyFix to handle reverse proxy headers
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+# Apply ProxyFix to handle reverse proxy headers
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
 discord = DiscordOAuth2Session(app)
 
 REDIS_URL = os.getenv('REDIS_URL')
@@ -64,7 +69,7 @@ def callback():
         session['user_id'] = user.id  # Store user_id in session
         return redirect(url_for("index"))
     except Exception as e:
-        app.logger.error(f"Error in callback: {str(e)}")
+        app.logger.error("Error in callback:", exc_info=True)
         return redirect(url_for("index"))
 
 @app.route("/logout")
