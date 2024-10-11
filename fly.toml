@@ -9,13 +9,6 @@ kill_timeout = 5
     "https://github.com/jbeder/heroku-buildpack-go"
   ]
 
-[env]
-  DATABASE_URL = "postgres://user:password@your_db_host:5432/discord_bot_db"
-  DISCORD_BOT_TOKEN = "your_discord_bot_token"
-  OPENAI_API_KEY = "your_openai_api_key"
-  ACTIVE_CHANNELS = "channel_id1,channel_id2"
-  DISCORD_BOT_KEY = "your_discord_bot_key"
-
 [[services]]
   internal_port = 8080
   protocol = "tcp"

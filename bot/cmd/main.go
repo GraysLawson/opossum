@@ -12,14 +12,14 @@ func main() {
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		utils.Logger.Fatal("Cannot load config:", err)
+		utils.GlobalLogger.Fatal("Cannot load config:", err)
 	}
 
 	services.InitVersioning()
 
 	discordSession, err := handlers.InitializeDiscord(cfg)
 	if err != nil {
-		utils.Logger.Fatal("Failed to initialize Discord session:", err)
+		utils.GlobalLogger.Fatal("Failed to initialize Discord session:", err)
 	}
 
 	discordSession.AddHandler(handlers.MessageCreate)
@@ -27,9 +27,9 @@ func main() {
 
 	err = discordSession.Open()
 	if err != nil {
-		utils.Logger.Fatal("Cannot open Discord session:", err)
+		utils.GlobalLogger.Fatal("Cannot open Discord session:", err)
 	}
 
-	utils.Logger.Info("Bot is now running. Press CTRL+C to exit.")
+	utils.GlobalLogger.Info("Bot is now running. Press CTRL+C to exit.")
 	services.WaitForExit()
 }

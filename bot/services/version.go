@@ -23,7 +23,7 @@ func InitVersioning() {
 
 	err = os.WriteFile("version.txt", []byte(fmt.Sprintf("%d", Version)), 0644)
 	if err != nil {
-		utils.Logger.Printf("Failed to write version file: %v", err)
+		utils.GlobalLogger.Error("Failed to write version file:", err)
 	}
 }
 
@@ -31,5 +31,5 @@ func WaitForExit() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
-	utils.Logger.Printf("Shutting down gracefully...")
+	utils.GlobalLogger.Info("Shutting down gracefully...")
 }

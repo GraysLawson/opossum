@@ -31,7 +31,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(m.Content, "!hello") {
 		_, err := s.ChannelMessageSend(m.ChannelID, "Hello World")
 		if err != nil {
-			utils.Logger.Error("Failed to send message:", err)
+			utils.GlobalLogger.Error("Failed to send message:", err)
 		}
 	}
 }

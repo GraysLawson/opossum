@@ -38,7 +38,7 @@ func ImageUpload(s *discordgo.Session, m *discordgo.MessageCreate) {
 				},
 			})
 			if err != nil {
-				utils.Logger.Error("Failed to send message with button:", err)
+				utils.GlobalLogger.Error("Failed to send message with button:", err)
 			}
 
 			// Handle button interaction

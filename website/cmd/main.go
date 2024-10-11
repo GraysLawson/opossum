@@ -1,18 +1,20 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/GraysLawson/opossum/website/config"
 	"github.com/GraysLawson/opossum/website/handlers"
 	"github.com/GraysLawson/opossum/website/models"
+	"github.com/GraysLawson/opossum/website/utils"
 )
 
 func main() {
+	utils.InitLogger()
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatal("Cannot load config:", err)
+		utils.GlobalLogger.Fatal("Cannot load config:", err)
 	}
 
 	models.InitDB(cfg.DatabaseURL)
@@ -25,9 +27,9 @@ func main() {
 	http.HandleFunc("/config", handlers.ConfigHandler)
 	http.HandleFunc("/logs", handlers.LogsHandler)
 
-	log.Println("Website is running on port 8080")
+	utils.GlobalLogger.Info("Website is running on port 8080")
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
-		log.Fatal("ListenAndServe:", err)
+		utils.GlobalLogger.Fatal("ListenAndServe:", err)
 	}
 }
