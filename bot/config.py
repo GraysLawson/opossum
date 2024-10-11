@@ -1,9 +1,10 @@
 import os
 
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-VERSION = os.getenv('BOT_VERSION', '0.1.0')
-ACTIVE_CHANNELS = os.getenv('ACTIVE_CHANNELS', '').split(',')
+DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
+OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
+VERSION = os.environ['BOT_VERSION']
+ACTIVE_CHANNELS = os.environ.get('ACTIVE_CHANNELS', '').split(',')
+DATABASE_URL = os.environ['DATABASE_URL']
 
 if not DISCORD_TOKEN:
     raise ValueError("Discord token not provided")

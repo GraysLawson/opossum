@@ -1,10 +1,12 @@
 import discord
 from discord.ext import commands
+import os
 from config import DISCORD_TOKEN, VERSION
 from events import BotEvents
 from commands import BotCommands
 from logger import setup_logger
 
+# Set up the logger
 logger = setup_logger()
 
 def main():
