@@ -13,7 +13,7 @@ def generate_image_description(image_url):
                     "role": "user",
                     "content": [
                         {"type": "text", "text": "Describe this image in detail:"},
-                        {"type": "image_url", "image_url": image_url}
+                        {"type": "image_url", "image_url": {"url": image_url}}
                     ],
                 }
             ],
