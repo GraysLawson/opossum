@@ -14,4 +14,4 @@ COPY . .
 
 ENV PATH=/root/.local/bin:$PATH
 
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:8080", "app:app"]
+CMD ["python", "main.py"]
