@@ -1,0 +1,38 @@
+app = "opossum"
+
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[build]
+  builder = "heroku/buildpacks:20"
+  buildpacks = [
+    "https://github.com/jbeder/heroku-buildpack-go"
+  ]
+
+[env]
+  DATABASE_URL = "postgres://user:password@your_db_host:5432/discord_bot_db"
+  DISCORD_BOT_TOKEN = "your_discord_bot_token"
+  OPENAI_API_KEY = "your_openai_api_key"
+  ACTIVE_CHANNELS = "channel_id1,channel_id2"
+  DISCORD_BOT_KEY = "your_discord_bot_key"
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.http_checks]]
+    interval = 10000
+    grace_period = "30s"
+    method = "GET"
+    path = "/"
+    protocol = "http"
+    timeout = 2000
+    tls_skip_verify = false
