@@ -54,10 +54,10 @@ def config():
         discord_token = os.getenv('DISCORD_TOKEN', '')
         openai_api_key = os.getenv('OPENAI_API_KEY', '')
         active_channels = os.getenv('ACTIVE_CHANNELS', '')
-        openai_model = os.getenv('OPENAI_MODEL', 'gpt-4-vision-preview')
+        openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
         
         # Fetch available OpenAI models
-        available_models = ['gpt-4-vision-preview', 'gpt-4', 'gpt-3.5-turbo']  # Add more as needed
+        available_models = ['gpt-4o-mini', 'gpt-4o', 'chatgpt-4o-latest']  # Add more as needed
         
         return render_template('config.html', 
                                discord_token=discord_token, 
