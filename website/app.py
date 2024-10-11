@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import redis
 import json
-import datetime
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -48,7 +48,7 @@ def config():
         # Log configuration changes
         redis_client = get_redis_connection()
         log_data = {
-            'timestamp': datetime.now().isoformat(),
+            'timestamp': datetime.utcnow().isoformat(),
             'level': 'INFO',
             'message': f"Configuration updated: Discord Token: {'*' * 10}, OpenAI API Key: {'*' * 10}, Active Channels: {active_channels}, OpenAI Model: {openai_model}"
         }
