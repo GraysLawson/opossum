@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -26,6 +27,8 @@ func LoadConfig() Config {
 		channels = strings.Split(activeChannels, ",")
 	}
 
+	redisDB, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
+
 	return Config{
 		DiscordToken:   os.Getenv("DISCORD_TOKEN"),
 		DBHost:         os.Getenv("DB_HOST"),
@@ -37,6 +40,6 @@ func LoadConfig() Config {
 		ActiveChannels: channels,
 		RedisAddr:      os.Getenv("REDIS_ADDR"),
 		RedisPassword:  os.Getenv("REDIS_PASSWORD"),
-		RedisDB:        0, // You can parse this from an env var if needed
+		RedisDB:        redisDB,
 	}
 }

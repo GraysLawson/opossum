@@ -14,7 +14,9 @@ primary_region = 'iad'
   PORT = '8080'
   REDIS_ADDR = "your-redis-host:6379"
   REDIS_PASSWORD = "your-redis-password"
+  REDIS_DB = "0"
   VERSION = "1.0.0"
+  ACTIVE_CHANNELS = "channel1,channel2,channel3"
 
 [http_service]
   internal_port = 8080

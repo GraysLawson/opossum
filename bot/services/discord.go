@@ -13,6 +13,8 @@ import (
 	"github.com/GraysLawson/bot/config"
 	"github.com/GraysLawson/bot/models"
 	"github.com/bwmarrin/discordgo"
+	"github.com/go-redis/redis/v8"
+	"github.com/sashabaranov/go-openai"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -20,6 +22,7 @@ import (
 var DB *gorm.DB
 var Version string
 var ActiveChannels []string
+var RedisClient *redis.Client
 
 func SetVersion(v string) {
 	Version = v
@@ -32,13 +35,10 @@ func UpdateStatus(s *discordgo.Session) {
 	}
 }
 
-func updateStatus(s *discordgo.Session) {
-	UpdateStatus(s)
-}
-
 func InitDatabase(cfg config.Config) {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBSSLMode)
+	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect to opossum database: %v", err)
@@ -58,6 +58,7 @@ func InitDiscordSession(cfg config.Config) *discordgo.Session {
 	}
 
 	dg.AddHandler(messageCreate)
+	dg.AddHandler(handleInteraction)
 
 	err = dg.Open()
 	if err != nil {
@@ -122,9 +123,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		// Send a reply with the button
 		_, err := s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-			Content:    "Click the button to get an AI-generated description of the image.",
-			Reference:  m.Reference(),
-			Components: components,
+			Content:   "Click the button to get an AI-generated description of the image.",
+			Reference: m.Reference(),
+			Components: []discordgo.MessageComponent{
+				discordgo.ActionsRow{
+					Components: components,
+				},
+			},
 		})
 		if err != nil {
 			log.Printf("Error sending message with button: %v", err)
@@ -132,7 +137,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "!ping" {
-		// ... rest of the function
+		s.ChannelMessageSend(m.ChannelID, "Pong!")
 	}
 
 	// Release the lock (it will auto-expire after 5 seconds anyway)
@@ -142,6 +147,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 func SetActiveChannels(channels []string) {
 	ActiveChannels = channels
 }
+
 func isImage(url string) bool {
 	extensions := []string{".jpg", ".jpeg", ".png", ".gif", ".webp"}
 	lowercaseURL := strings.ToLower(url)
@@ -211,7 +217,7 @@ func getImageDescription(imageURL string) string {
 		Prompt: "Describe this image in detail.",
 	}
 
-	resp, err := client.AnalyzeImage(ctx, req)
+	resp, err := client.CreateImageAnalysis(ctx, req)
 	if err != nil {
 		log.Printf("Error analyzing image: %v", err)
 		return "Error analyzing image"
