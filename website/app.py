@@ -44,8 +44,8 @@ def login():
 def callback():
     try:
         discord.callback()
-        user = User()
-        user.id = discord.fetch_user().id
+        user_data = discord.fetch_user()
+        user = User(user_data.id)
         login_user(user)
         return redirect(url_for("index"))
     except Exception as e:
