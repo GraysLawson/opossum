@@ -7,13 +7,21 @@ app = 'opossum-website'
 primary_region = 'iad'
 
 [build]
+  dockerfile = "Dockerfile"
+
+[build.args]
+  BUILD_ENV = "production"
+
+[experimental]
+  auto_rollback = true
+  enable_consul = true
 
 [http_service]
   internal_port = 8080
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
 
 [[vm]]

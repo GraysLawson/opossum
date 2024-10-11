@@ -1,13 +1,26 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
 import psycopg2
+import psycopg2.extras
 
+app = Flask(__name__)
 app = Flask(__name__)
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL)
+    conn.cursor_factory = psycopg2.extras.DictCursor
+    with conn.cursor() as cur:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS bot_logs (
+                id SERIAL PRIMARY KEY,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                level VARCHAR(10),
+                message TEXT
+            )
+        """)
+        conn.commit()
     return conn
 
 @app.route('/')
@@ -16,9 +29,17 @@ def index():
 
 @app.route('/logs')
 def logs():
-    # Fetch logs from database or file
-    logs = []
-    return render_template('logs.html', logs=logs)
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM bot_logs ORDER BY timestamp DESC LIMIT 100')
+        logs = cur.fetchall()
+        cur.close()
+        conn.close()
+        return render_template('logs.html', logs=logs)
+    except Exception as e:
+        app.logger.error(f"An error occurred while fetching logs: {str(e)}")
+        return render_template('logs.html', logs=[], error="An error occurred while fetching logs.")
 
 @app.route('/config', methods=['GET', 'POST'])
 def config():
