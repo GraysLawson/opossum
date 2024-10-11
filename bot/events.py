@@ -6,6 +6,7 @@ from utils import generate_image_description
 from logger import logger
 import redis
 import json
+import asyncio
 
 class DescribeImageButton(ui.Button):
     def __init__(self, image_url):
@@ -13,9 +14,18 @@ class DescribeImageButton(ui.Button):
         self.image_url = image_url
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        description = generate_image_description(self.image_url)
-        await interaction.followup.send(f"Image Description: {description}")
+        await interaction.response.defer(ephemeral=False, thinking=True)
+        message = await interaction.followup.send("Analyzing the image...")
+
+        async def update_message(text):
+            await message.edit(content=text)
+
+        try:
+            description = await asyncio.to_thread(generate_image_description, self.image_url, update_message)
+            await message.edit(content=f"Image Description: {description}")
+        except Exception as e:
+            logger.error(f"Error in DescribeImageButton callback: {str(e)}")
+            await message.edit(content="Sorry, I couldn't generate a description for this image.")
 
 class BotEvents(commands.Cog):
     def __init__(self, bot):

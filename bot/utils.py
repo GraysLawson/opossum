@@ -4,8 +4,9 @@ from logger import logger
 
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
-def generate_image_description(image_url):
+async def generate_image_description(image_url, progress_callback):
     try:
+        await progress_callback("Initializing image analysis...")
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
@@ -19,6 +20,7 @@ def generate_image_description(image_url):
             ],
             max_tokens=300
         )
+        await progress_callback("Generating description...")
         return response.choices[0].message.content
     except Exception as e:
         logger.error(f"Error generating image description: {str(e)}")

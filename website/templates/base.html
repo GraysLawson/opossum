@@ -2,23 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bot Monitoring Website</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpossumBot - Discord Image Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body>
-    <header>
-        <h1>Bot Monitoring Website</h1>
-        <nav>
-            <a href="{{ url_for('index') }}">Home</a> |
-            <a href="{{ url_for('logs') }}">Logs</a> |
-            <a href="{{ url_for('config') }}">Configuration</a>
+<body class="bg-gray-100 font-sans">
+    <header class="bg-indigo-600 text-white shadow-lg">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="{{ url_for('index') }}" class="text-2xl font-bold">OpossumBot</a>
+            <div>
+                <a href="{{ url_for('index') }}" class="px-4 py-2 hover:text-indigo-200">Home</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('logs') }}" class="px-4 py-2 hover:text-indigo-200">Logs</a>
+                    <a href="{{ url_for('config') }}" class="px-4 py-2 hover:text-indigo-200">Configuration</a>
+                    <a href="{{ url_for('logout') }}" class="px-4 py-2 bg-indigo-500 rounded hover:bg-indigo-400">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="px-4 py-2 bg-indigo-500 rounded hover:bg-indigo-400">Login</a>
+                {% endif %}
+            </div>
         </nav>
     </header>
-    <main>
+    <main class="container mx-auto px-6 py-8">
         {% block content %}{% endblock %}
     </main>
-    <footer>
-        <p>&copy; 2023 Bot Monitoring Website</p>
+    <footer class="bg-gray-800 text-white py-4">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2023 OpossumBot. All rights reserved.</p>
+        </div>
     </footer>
 </body>
 </html>

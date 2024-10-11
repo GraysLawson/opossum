@@ -3,3 +3,4 @@ psycopg2-binary
 gunicorn
 redis
 openai>=1.51.2
+Flask-Discord

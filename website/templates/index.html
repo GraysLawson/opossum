@@ -1,6 +1,29 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Home</h2>
-<p>Welcome to the Bot Monitoring Website.</p>
+<div class="text-center">
+    <h1 class="text-4xl font-bold mb-8">Welcome to OpossumBot</h1>
+    <p class="text-xl mb-8">Your intelligent Discord companion for image analysis</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-4">Features</h2>
+        <ul class="list-disc list-inside">
+            <li>Automatic image detection in Discord channels</li>
+            <li>Generate detailed descriptions of uploaded images</li>
+            <li>Customizable active channels</li>
+            <li>Easy configuration through web interface</li>
+        </ul>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-4">How It Works</h2>
+        <ol class="list-decimal list-inside">
+            <li>Upload an image to a Discord channel</li>
+            <li>OpossumBot detects the image</li>
+            <li>Click the "Describe Image" button</li>
+            <li>Receive a detailed description of the image</li>
+        </ol>
+    </div>
+</div>
 {% endblock %}

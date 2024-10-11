@@ -1,10 +1,18 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
+from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import os
 import redis
 import json
 from datetime import datetime
+from functools import wraps
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
+app.config["DISCORD_CLIENT_ID"] = os.getenv("DISCORD_CLIENT_ID")
+app.config["DISCORD_CLIENT_SECRET"] = os.getenv("DISCORD_CLIENT_SECRET")
+app.config["DISCORD_REDIRECT_URI"] = os.getenv("DISCORD_REDIRECT_URI")
+
+discord = DiscordOAuth2Session(app)
 
 REDIS_URL = os.getenv('REDIS_URL')
 
@@ -15,11 +23,34 @@ if not REDIS_URL:
 def get_redis_connection():
     return redis.Redis.from_url(REDIS_URL)
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not discord.authorized:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
+@app.route("/login")
+def login():
+    return discord.create_session()
+
+@app.route("/callback")
+def callback():
+    discord.callback()
+    return redirect(url_for("index"))
+
+@app.route("/logout")
+def logout():
+    discord.revoke()
+    return redirect(url_for("index"))
+
 @app.route('/logs')
+@login_required
 def logs():
     try:
         redis_client = get_redis_connection()
@@ -38,6 +69,7 @@ def logs():
         return render_template('logs.html', logs=[], error="An unexpected error occurred while fetching logs.")
 
 @app.route('/config', methods=['GET', 'POST'])
+@login_required
 def config():
     if request.method == 'POST':
         discord_token = request.form.get('discord_token')
@@ -80,5 +112,9 @@ def config():
                                available_models=available_models,
                                channels=channels)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+@app.errorhandler(Unauthorized)
+def redirect_unauthorized(e):
+    return redirect(url_for("login"))
+
+if __name__ == "__main__":
+    app.run(debug=True)
