@@ -3,11 +3,11 @@ from config import OPENAI_API_KEY
 from logger import setup_logger
 
 logger = setup_logger()
-openai.api_key = OPENAI_API_KEY
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_image_description(image_url):
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4-vision-preview",
             messages=[
                 {
