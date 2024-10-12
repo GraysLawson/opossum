@@ -1,11 +1,60 @@
+:root {
+    --pastel-pink-light: #FFB6C1;
+    --pastel-pink-dark: #D687B1;
+    --pastel-purple-light: #E6E6FA;
+    --pastel-purple-dark: #B19CD9;
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    transition: color 0.2s ease-in-out;
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
 }
 
-header, footer {
+header {
+    background-color: var(--pastel-pink-light);
+    color: #333;
+}
+
+.dark header {
+    background-color: var(--pastel-pink-dark);
+    color: #fff;
+}
+
+nav a:hover {
+    color: var(--pastel-purple-light);
+}
+
+.dark nav a:hover {
+    color: var(--pastel-purple-dark);
+}
+
+.bg-pink-300 {
+    background-color: var(--pastel-pink-light);
+}
+
+.dark .bg-pink-600 {
+    background-color: var(--pastel-pink-dark);
+}
+
+.bg-pink-400 {
+    background-color: var(--pastel-purple-light);
+}
+
+.dark .bg-pink-400 {
+    background-color: var(--pastel-purple-dark);
+}
+
+.hover\:bg-pink-500:hover {
+    background-color: var(--pastel-pink-light);
+}
+
+.dark .hover\:bg-pink-500:hover {
+    background-color: var(--pastel-pink-dark);
+}
+
+footer {
     padding: 10px;
 }
 
@@ -59,26 +108,51 @@ main {
     background-color: #3182ce;
 }
 
-.dark .bg-pink-400 {
+.dark .bg-pink-300 {
     background-color: #9b2c2c;
+}
+
+.dark .bg-pink-400 {
+    background-color: #f56fa1;
 }
 
 .dark .hover\:bg-pink-500:hover {
     background-color: #742a2a;
 }
 
-/* Log styles */
-.dark #log-container {
-    border: 1px solid #4a5568;
+.dark .bg-pink-500 {
+    background-color: #f56fa1;
 }
 
-.dark #log-content {
+/* Log styles */
+#log-container {
+    background-color: #ffffff;
+    color: #333333;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.dark #log-container {
+    background-color: #1a202c;
     color: #e2e8f0;
 }
 
-/* Scrollbar styles for dark mode */
-.dark #log-container::-webkit-scrollbar {
+#log-content {
+    color: inherit;
+}
+
+/* Scrollbar styles */
+#log-container::-webkit-scrollbar {
     width: 12px;
+}
+
+#log-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#log-container::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 6px;
+    border: 3px solid #f1f1f1;
 }
 
 .dark #log-container::-webkit-scrollbar-track {
@@ -87,6 +161,5 @@ main {
 
 .dark #log-container::-webkit-scrollbar-thumb {
     background-color: #4a5568;
-    border-radius: 6px;
     border: 3px solid #2d3748;
 }

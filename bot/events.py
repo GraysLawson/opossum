@@ -14,14 +14,15 @@ class DescribeImageButton(ui.Button):
         self.image_url = image_url
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=False, thinking=True)
-
+        await interaction.response.defer(ephemeral=False)
+        
         try:
+            await interaction.edit_original_response(content="Analyzing the image...")
             description = await generate_image_description(self.image_url)
-            await interaction.followup.edit_message(interaction.message.id, content=f"Image Description: {description}")
+            await interaction.edit_original_response(content=f"Image Description: {description}")
         except Exception as e:
             logger.error(f"Error in DescribeImageButton callback: {str(e)}")
-            await interaction.followup.edit_message(interaction.message.id, content="Sorry, I couldn't generate a description for this image.")
+            await interaction.edit_original_response(content="Sorry, I couldn't generate a description for this image.")
 
 class BotEvents(commands.Cog):
     def __init__(self, bot):
