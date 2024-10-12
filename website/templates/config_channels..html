@@ -1,0 +1,15 @@
+{% extends 'config.html' %}
+
+{% block config_content %}
+<h3 class="text-xl font-semibold mb-4">Active Channels</h3>
+<form method="post">
+    {% for channel in channels %}
+        <input type="checkbox" id="channel_{{ channel.id }}" name="active_channels" value="{{ channel.id }}"
+               {% if channel.id in active_channels %}checked{% endif %}>
+        <label for="channel_{{ channel.id }}">{{ channel.guild_name }} - {{ channel.name }}</label><br>
+    {% endfor %}
+    <br>
+    <input type="submit" value="Save" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+</form>
+{% endblock %}
+

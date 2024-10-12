@@ -102,49 +102,53 @@ def logs():
         app.logger.error(f"An unexpected error occurred while fetching logs: {str(e)}")
         return render_template('logs.html', logs=[], error="An unexpected error occurred while fetching logs.")
 
-@app.route('/config', methods=['GET', 'POST'])
+@app.route('/config')
 @login_required_decorator
 def config():
+    return render_template('config.html')
+
+@app.route('/config/tokens', methods=['GET', 'POST'])
+@login_required_decorator
+def config_tokens():
     if request.method == 'POST':
         discord_token = request.form.get('discord_token')
         openai_api_key = request.form.get('openai_api_key')
-        active_channels = request.form.getlist('active_channels')
-        openai_model = request.form.get('openai_model')
-
-        # Log configuration changes
-        redis_client = get_redis_connection()
-        log_data = {
-            'timestamp': datetime.utcnow().isoformat(),
-            'level': 'INFO',
-            'message': f"Configuration updated: Discord Token: {'*' * 10}, OpenAI API Key: {'*' * 10}, Active Channels: {active_channels}, OpenAI Model: {openai_model}"
-        }
-        redis_client.lpush('bot_logs', json.dumps(log_data))
-
         os.environ['DISCORD_TOKEN'] = discord_token
         os.environ['OPENAI_API_KEY'] = openai_api_key
-        os.environ['ACTIVE_CHANNELS'] = ','.join(active_channels) if active_channels else ''
-        os.environ['OPENAI_MODEL'] = openai_model
-
-        return redirect(url_for('config'))
+        flash('Tokens and API keys updated successfully', 'success')
+        return redirect(url_for('config_tokens'))
     else:
         discord_token = os.getenv('DISCORD_TOKEN', '')
         openai_api_key = os.getenv('OPENAI_API_KEY', '')
+        return render_template('config_tokens.html', discord_token=discord_token, openai_api_key=openai_api_key)
+
+@app.route('/config/channels', methods=['GET', 'POST'])
+@login_required_decorator
+def config_channels():
+    if request.method == 'POST':
+        active_channels = request.form.getlist('active_channels')
+        os.environ['ACTIVE_CHANNELS'] = ','.join(active_channels) if active_channels else ''
+        flash('Active channels updated successfully', 'success')
+        return redirect(url_for('config_channels'))
+    else:
         active_channels = os.getenv('ACTIVE_CHANNELS', '').split(',')
-        openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
-        
         redis_client = get_redis_connection()
         channels_json = redis_client.get('discord_channels')
         channels = json.loads(channels_json) if channels_json else []
+        return render_template('config_channels.html', active_channels=active_channels, channels=channels)
 
+@app.route('/config/model', methods=['GET', 'POST'])
+@login_required_decorator
+def config_model():
+    if request.method == 'POST':
+        openai_model = request.form.get('openai_model')
+        os.environ['OPENAI_MODEL'] = openai_model
+        flash('OpenAI model updated successfully', 'success')
+        return redirect(url_for('config_model'))
+    else:
+        openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
         available_models = ['gpt-4o-mini', 'gpt-4o', 'chatgpt-4o-latest', 'gpt-4-vision-preview']
-        
-        return render_template('config.html', 
-                               discord_token=discord_token, 
-                               openai_api_key=openai_api_key, 
-                               active_channels=active_channels,
-                               openai_model=openai_model,
-                               available_models=available_models,
-                               channels=channels)
+        return render_template('config_model.html', openai_model=openai_model, available_models=available_models)
 
 @app.route('/stream-logs')
 @login_required_decorator

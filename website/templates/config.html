@@ -1,25 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Configuration</h2>
-<form method="post">
-    <label for="discord_token">Discord Token:</label><br>
-    <input type="password" id="discord_token" name="discord_token" value="{{ discord_token }}"><br><br>
-    <label for="openai_api_key">OpenAI API Key:</label><br>
-    <input type="password" id="openai_api_key" name="openai_api_key" value="{{ openai_api_key }}"><br><br>
-    <label>Active Channels:</label><br>
-    {% for channel in channels %}
-        <input type="checkbox" id="channel_{{ channel.id }}" name="active_channels" value="{{ channel.id }}"
-               {% if channel.id in active_channels %}checked{% endif %}>
-        <label for="channel_{{ channel.id }}">{{ channel.guild_name }} - {{ channel.name }}</label><br>
-    {% endfor %}
-    <br>
-    <label for="openai_model">OpenAI Model:</label><br>
-    <select id="openai_model" name="openai_model">
-        {% for model in available_models %}
-            <option value="{{ model }}" {% if model == openai_model %}selected{% endif %}>{{ model }}</option>
-        {% endfor %}
-    </select><br><br>
-    <input type="submit" value="Save">
-</form>
+<h2 class="text-2xl font-bold mb-4">Configuration</h2>
+
+<div class="mb-6">
+    <nav class="flex space-x-4">
+        <a href="{{ url_for('config_tokens') }}" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Tokens/API Keys</a>
+        <a href="{{ url_for('config_channels') }}" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Active Channels</a>
+        <a href="{{ url_for('config_model') }}" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">OpenAI Model</a>
+    </nav>
+</div>
+
+{% block config_content %}{% endblock %}
 {% endblock %}
