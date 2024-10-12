@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import ButtonStyle, ui
 from config import ACTIVE_CHANNELS, REDIS_URL
 from utils import generate_image_description
@@ -67,32 +67,47 @@ class BotEvents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.redis_client = redis.Redis.from_url(REDIS_URL)
+        self.update_role_assignments.start()
+
+    def cog_unload(self):
+        self.update_role_assignments.cancel()
 
     @commands.Cog.listener()
     async def on_ready(self):
         logger.info(f"{self.bot.user.name} has connected to Discord.")
         logger.info(f"Version: {self.bot.version}")
         await self.bot.change_presence(activity=discord.Game(name=f"v{self.bot.version}"))
+
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild):
         await self.update_channel_list()
 
-    async def update_channel_list(self):
-        channels = []
-        for guild in self.bot.guilds:
-            for channel in guild.channels:
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild):
+        await self.update_channel_list()
+
+   
+async def update_channel_list(self):
+    channels = []
+    for guild in self.bot.guilds:
+        for channel in guild.channels:
+            # Consider only text channels
+            if isinstance(channel, discord.TextChannel):
                 channels.append({
                     'id': str(channel.id),
                     'name': channel.name,
+                    'guild_id': str(guild.id),
                     'guild_name': guild.name
                 })
-        self.redis_client.set('discord_channels', json.dumps(channels))
-        logger.info(f"Updated channel list in Redis with {len(channels)} channels")
+    self.redis_client.set('discord_channels', json.dumps(channels))
+    logger.info(f"Updated channel list in Redis with {len(channels)} channels")
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author == self.bot.user:
             return
 
-        if ACTIVE_CHANNELS and message.channel.id not in ACTIVE_CHANNELS:
+        if ACTIVE_CHANNELS and str(message.channel.id) not in ACTIVE_CHANNELS:
             return
 
         if message.content.startswith('!hello'):
@@ -124,12 +139,72 @@ class BotEvents(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_roles=True)
     async def create_role_message(self, ctx):
-        redis_client = redis.Redis.from_url(REDIS_URL)
-        roles_json = redis_client.get('role_assignment_roles')
-        if not roles_json:
+        guild_id = str(ctx.guild.id)
+        config_json = self.redis_client.get(f'role_assignment_config:{guild_id}')
+        if not config_json:
             await ctx.send("No roles configured for assignment. Please configure them on the website.")
             return
 
-        roles = json.loads(roles_json)
+        config = json.loads(config_json)
+        roles = config.get('roles', {})
+        channel_id = config.get('channel_id')
+        message_format = config.get('message_format', "Assign yourself a role by clicking a button below:")
+
+        channel = self.bot.get_channel(int(channel_id))
+        if channel is None:
+            await ctx.send("Configured channel not found.")
+            return
+
         view = RoleAssignmentView(roles)
-        await ctx.send("Click a button to assign or remove the corresponding role:", view=view)
+        message_content = message_format
+
+        message = await channel.send(message_content, view=view)
+        config['message_id'] = str(message.id)
+        self.redis_client.set(f'role_assignment_config:{guild_id}', json.dumps(config))
+        await ctx.send(f"Role assignment message created in {channel.mention}")
+
+    @tasks.loop(minutes=5)
+    async def update_role_assignments(self):
+        try:
+            all_keys = self.redis_client.keys('role_assignment_config:*')
+            for key in all_keys:
+                guild_id = key.decode().split(':')[1]
+                config_json = self.redis_client.get(key)
+                if not config_json:
+                    continue
+                config = json.loads(config_json)
+                channel_id = config.get('channel_id')
+                message_format = config.get('message_format', "Assign yourself a role by clicking the buttons below:")
+                roles = config.get('roles', {})
+                message_id = config.get('message_id')
+
+                channel = self.bot.get_channel(int(channel_id))
+                if channel is None:
+                    logger.error(f"Channel ID {channel_id} not found for guild {guild_id}")
+                    continue
+
+                if message_id:
+                    try:
+                        message = await channel.fetch_message(int(message_id))
+                        # Update message content and view if necessary
+                        view = RoleAssignmentView(roles)
+                        if message.content != message_format:
+                            await message.edit(content=message_format, view=view)
+                    except discord.NotFound:
+                        logger.warning(f"Message ID {message_id} not found in channel {channel_id}. Creating a new message.")
+                        view = RoleAssignmentView(roles)
+                        message = await channel.send(message_format, view=view)
+                        config['message_id'] = str(message.id)
+                        self.redis_client.set(key, json.dumps(config))
+                else:
+                    # No message_id, create a new message
+                    view = RoleAssignmentView(roles)
+                    message = await channel.send(message_format, view=view)
+                    config['message_id'] = str(message.id)
+                    self.redis_client.set(key, json.dumps(config))
+        except Exception as e:
+            logger.error(f"Error in update_role_assignments: {str(e)}")
+
+    @update_role_assignments.before_loop
+    async def before_update_role_assignments(self):
+        await self.bot.wait_until_ready()

@@ -12,11 +12,18 @@ from utils import increment_version, update_guild_list
 # Set up the logger
 logger = setup_logger()
 
+async def shutdown(signal, bot):
+    logger.info(f"Received exit signal {signal.name}...")
+    await bot.close()
+    logger.info("Bot shut down successfully.")
+
 async def main():
     logger.info("Starting bot...")
     intents = discord.Intents.default()
     intents.message_content = True
     intents.reactions = True
+    intents.guilds = True
+    intents.members = True  # Required for role assignments
     bot = commands.Bot(command_prefix='!', intents=intents)
     
     new_version = increment_version()
@@ -58,13 +65,5 @@ async def main():
     finally:
         await bot.close()
 
-async def shutdown(signal, bot):
-    logger.info(f"Received exit signal {signal.name}...")
-    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    [task.cancel() for task in tasks]
-    await asyncio.gather(*tasks, return_exceptions=True)
-    await bot.close()
-    logger.info("Bot shutdown complete.")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())

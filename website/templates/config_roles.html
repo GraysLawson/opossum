@@ -14,6 +14,18 @@
 {% if selected_guild_id %}
 <form method="post">
     <input type="hidden" name="guild_id" value="{{ selected_guild_id }}">
+    
+    <label for="channel_id">Select Channel:</label><br>
+    <select name="channel_id" id="channel_id" class="mb-2 p-2 border rounded">
+        {% for channel in channels %}
+            <option value="{{ channel.id }}" {% if channel.id == channel_id %}selected{% endif %}>{{ channel.guild_name }} - {{ channel.name }}</option>
+        {% endfor %}
+    </select><br><br>
+    
+    <label for="message_format">Message Format:</label><br>
+    <textarea id="message_format" name="message_format" rows="4" class="mb-4 p-2 border rounded">{{ message_format }}</textarea><br>
+    
+    <h4 class="text-lg font-semibold mb-2">Select Roles:</h4>
     {% for role in all_roles %}
         <div>
             <input type="checkbox" id="role_{{ role.id }}" name="roles" value="{{ role.id }}" {% if role.id in selected_roles %}checked{% endif %}>

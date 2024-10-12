@@ -58,33 +58,87 @@ def config_model():
 @config_bp.route('/config/roles', methods=['GET', 'POST'])
 @login_required
 def config_roles():
+    redis_client = get_redis_connection()
+
     if request.method == 'POST':
         selected_roles = request.form.getlist('roles')
         guild_id = request.form.get('guild_id')
-        redis_client = get_redis_connection()
-        roles = {role_id: role_name for role_id, role_name in zip(request.form.getlist('role_ids'), request.form.getlist('role_names')) if role_id in selected_roles}
-        redis_client.set(f'role_assignment_roles:{guild_id}', json.dumps(roles))
+        channel_id = request.form.get('channel_id')
+        message_format = request.form.get('message_format', '')
+
+        # Fetch all role_ids and role_names
+        role_ids = request.form.getlist('role_ids')
+        role_names = request.form.getlist('role_names')
+        roles = {role_id: role_name for role_id, role_name in zip(role_ids, role_names) if role_id in selected_roles}
+
+        # Prepare the config dictionary
+        config_data = {
+            'channel_id': channel_id,
+            'message_format': message_format,
+            'roles': roles,
+            'message_id': redis_client.get(f'role_assignment_message_id:{guild_id}').decode('utf-8') if redis_client.get(f'role_assignment_message_id:{guild_id}') else None
+        }
+
+        # Store the config in Redis
+        redis_client.set(f'role_assignment_config:{guild_id}', json.dumps(config_data))
+
         flash('Role configuration updated successfully', 'success')
         return redirect(url_for('config.config_roles'))
+
     else:
-        redis_client = get_redis_connection()
         guild_ids_json = redis_client.get('bot_guild_ids')
         guild_ids = json.loads(guild_ids_json) if guild_ids_json else []
         selected_guild_id = request.args.get('guild_id', guild_ids[0] if guild_ids else None)
-        bot_token = os.getenv('DISCORD_TOKEN')
-        headers = {'Authorization': f'Bot {bot_token}'}
-        guilds = []
-        for guild_id in guild_ids:
-            response = requests.get(f'https://discord.com/api/v10/guilds/{guild_id}', headers=headers)
-            if response.status_code == 200:
-                guild_data = response.json()
-                guilds.append({'id': guild_id, 'name': guild_data['name']})
+
         if selected_guild_id:
+            # Fetch roles
+            bot_token = os.getenv('DISCORD_TOKEN')
+            headers = {'Authorization': f'Bot {bot_token}'}
             response = requests.get(f'https://discord.com/api/v10/guilds/{selected_guild_id}/roles', headers=headers)
             all_roles = response.json() if response.status_code == 200 else []
-            selected_roles_json = redis_client.get(f'role_assignment_roles:{selected_guild_id}')
-            selected_roles = json.loads(selected_roles_json) if selected_roles_json else {}
+
+            # Fetch current config
+            config_json = redis_client.get(f'role_assignment_config:{selected_guild_id}')
+            if config_json:
+                config = json.loads(config_json)
+                selected_roles = config.get('roles', {})
+                channel_id = config.get('channel_id', '')
+                message_format = config.get('message_format', '')
+            else:
+                selected_roles = {}
+                channel_id = ''
+                message_format = ''
+
+            # Fetch channels for the guild
+            channels_json = redis_client.get('discord_channels')
+            channels = json.loads(channels_json) if channels_json else []
+            guild_channels = [channel for channel in channels if str(channel['guild_id']) == selected_guild_id]
+
+            return render_template(
+                'config_roles.html',
+                guilds=guild_ids,
+                selected_guild_id=selected_guild_id,
+                all_roles=all_roles,
+                selected_roles=selected_roles,
+                channels=guild_channels,
+                channel_id=channel_id,
+                message_format=message_format
+            )
+
         else:
             all_roles = []
             selected_roles = {}
-        return render_template('config_roles.html', guilds=guilds, selected_guild_id=selected_guild_id, all_roles=all_roles, selected_roles=selected_roles)
+            channels = []
+            channel_id = ''
+            message_format = ''
+
+            return render_template(
+                'config_roles.html',
+                guilds=guild_ids,
+                selected_guild_id=None,
+                all_roles=all_roles,
+                selected_roles=selected_roles,
+                channels=channels,
+                channel_id=channel_id,
+                message_format=message_format
+            )

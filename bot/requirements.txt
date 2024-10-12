@@ -5,5 +5,3 @@ python-dotenv
 redis
 Flask-Login
 requests==2.26.0
-
-
