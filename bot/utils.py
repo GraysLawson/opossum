@@ -5,9 +5,13 @@ import asyncio
 import base64
 import requests
 from openai import AsyncOpenAI
+import redis
+import os
 
 # Initialize the OpenAI client
 client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
+
+redis_client = redis.Redis.from_url(os.environ['REDIS_URL'])
 
 async def generate_image_description(image_url):
     try:
@@ -54,3 +58,14 @@ async def generate_image_description(image_url):
     except Exception as e:
         logger.error(f"Error generating image description: {str(e)}", exc_info=True)
         return "Sorry, I couldn't generate a description for this image."
+
+def increment_version():
+    current_version = redis_client.get('bot_version')
+    if current_version is None:
+        new_version = '1.0.0'
+    else:
+        major, minor, patch = map(int, current_version.decode().split('.'))
+        patch += 1
+        new_version = f"{major}.{minor}.{patch}"
+    redis_client.set('bot_version', new_version)
+    return new_version

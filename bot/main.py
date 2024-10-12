@@ -7,6 +7,7 @@ from commands import BotCommands
 from logger import setup_logger
 import asyncio
 import signal
+from utils import increment_version
 
 # Set up the logger
 logger = setup_logger()
@@ -17,9 +18,11 @@ async def main():
     intents.message_content = True
     intents.reactions = True
     bot = commands.Bot(command_prefix='!', intents=intents)
-    bot.version = VERSION
-
-    logger.info(f"Bot version: {VERSION}")
+    
+    new_version = increment_version()
+    bot.version = new_version
+    
+    logger.info(f"Bot version: {new_version}")
 
     await bot.add_cog(BotEvents(bot))
     await bot.add_cog(BotCommands(bot))

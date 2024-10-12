@@ -41,6 +41,7 @@ class BotEvents(commands.Cog):
     async def on_ready(self):
         logger.info(f"{self.bot.user.name} has connected to Discord.")
         logger.info(f"Version: {self.bot.version}")
+        await self.bot.change_presence(activity=discord.Game(name=f"v{self.bot.version}"))
         await self.update_channel_list()
 
     async def update_channel_list(self):
