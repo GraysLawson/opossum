@@ -3,6 +3,7 @@ from flask_login import login_required
 import os
 from utils import get_redis_connection
 import json
+import requests
 
 config_bp = Blueprint('config', __name__)
 
@@ -54,3 +55,33 @@ def config_model():
         available_models = ['gpt-4o-mini', 'gpt-4o', 'chatgpt-4o-latest', 'gpt-4-vision-preview']
         return render_template('config_model.html', openai_model=openai_model, available_models=available_models)
 
+@config_bp.route('/config/roles', methods=['GET', 'POST'])
+@login_required
+def config_roles():
+    if request.method == 'POST':
+        selected_roles = request.form.getlist('roles')
+        redis_client = get_redis_connection()
+        roles = {role_id: role_name for role_id, role_name in zip(request.form.getlist('role_ids'), request.form.getlist('role_names')) if role_id in selected_roles}
+        redis_client.set('role_assignment_roles', json.dumps(roles))
+        flash('Role configuration updated successfully', 'success')
+        return redirect(url_for('config.config_roles'))
+    else:
+        # Fetch guilds the bot is in
+        bot_token = os.getenv('DISCORD_TOKEN')
+        headers = {'Authorization': f'Bot {bot_token}'}
+        response = requests.get('https://discord.com/api/v8/users/@me/guilds', headers=headers)
+        guilds = response.json()
+
+        # For simplicity, we'll use the first guild. In a real application, you might want to let the user choose.
+        guild_id = guilds[0]['id']
+
+        # Fetch roles from the selected guild
+        response = requests.get(f'https://discord.com/api/v8/guilds/{guild_id}/roles', headers=headers)
+        all_roles = response.json()
+
+        # Fetch currently selected roles from Redis
+        redis_client = get_redis_connection()
+        selected_roles_json = redis_client.get('role_assignment_roles')
+        selected_roles = json.loads(selected_roles_json) if selected_roles_json else {}
+
+        return render_template('config_roles.html', all_roles=all_roles, selected_roles=selected_roles)

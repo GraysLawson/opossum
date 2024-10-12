@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
-from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 import redis
@@ -8,7 +8,8 @@ from datetime import datetime
 from functools import wraps
 import time
 from models import User
-from config import discord, init_discord
+from config import discord, init_discord, DISCORD_TOKEN
+import requests
 
 app = Flask(__name__)
 
@@ -57,6 +58,32 @@ app.register_blueprint(logs_bp)
 def index():
     return render_template('index.html')
 
+@app.route('/config/roles', methods=['GET', 'POST'])
+@login_required
+def config_roles():
+    if request.method == 'POST':
+        selected_roles = request.form.getlist('roles')
+        redis_client = redis.Redis.from_url(REDIS_URL)
+        roles = {role_id: role_name for role_id, role_name in zip(request.form.getlist('role_ids'), request.form.getlist('role_names')) if role_id in selected_roles}
+        redis_client.set('role_assignment_roles', json.dumps(roles))
+        flash('Role configuration updated successfully', 'success')
+        return redirect(url_for('config_roles'))
+    else:
+        # Fetch roles from Discord API
+        guild_id = os.getenv('DISCORD_GUILD_ID')
+        headers = {'Authorization': f'Bot {DISCORD_TOKEN}'}
+        response = requests.get(f'https://discord.com/api/v10/guilds/{guild_id}/roles', headers=headers)
+        all_roles = response.json()
+
+        # Fetch currently selected roles from Redis
+        redis_client = redis.Redis.from_url(REDIS_URL)
+        selected_roles_json = redis_client.get('role_assignment_roles')
+        selected_roles = json.loads(selected_roles_json) if selected_roles_json else {}
+
+        return render_template('config_roles.html', all_roles=all_roles, selected_roles=selected_roles)
+
+# Add this near the top of your file, with other imports
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
+
 if __name__ == "__main__":
     app.run(debug=True)
-

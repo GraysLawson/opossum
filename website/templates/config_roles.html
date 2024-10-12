@@ -1,0 +1,17 @@
+{% extends 'config.html' %}
+
+{% block config_content %}
+<h3 class="text-xl font-semibold mb-4">Role Assignment Configuration</h3>
+<form method="post">
+    {% for role in all_roles %}
+    <div class="mb-2">
+        <input type="checkbox" id="role_{{ role.id }}" name="roles" value="{{ role.id }}"
+               {% if role.id|string in selected_roles %}checked{% endif %}>
+        <label for="role_{{ role.id }}">{{ role.name }}</label>
+        <input type="hidden" name="role_ids" value="{{ role.id }}">
+        <input type="hidden" name="role_names" value="{{ role.name }}">
+    </div>
+    {% endfor %}
+    <input type="submit" value="Save" class="px-4 py-2 bg-pink-400 text-white rounded hover:bg-pink-500">
+</form>
+{% endblock %}

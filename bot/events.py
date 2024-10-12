@@ -39,6 +39,30 @@ class DescribeImageButton(ui.Button):
             logger.error(f"Error in DescribeImageButton callback: {str(e)}")
             await interaction.edit_original_response(content="Sorry, I couldn't generate a description for this image.")
 
+class RoleAssignmentButton(ui.Button):
+    def __init__(self, role_id: int, label: str):
+        super().__init__(style=ButtonStyle.primary, label=label)
+        self.role_id = role_id
+
+    async def callback(self, interaction: discord.Interaction):
+        role = interaction.guild.get_role(self.role_id)
+        if role is None:
+            await interaction.response.send_message("Role not found.", ephemeral=True)
+            return
+
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            await interaction.response.send_message(f"Removed {role.name} role.", ephemeral=True)
+        else:
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message(f"Added {role.name} role.", ephemeral=True)
+
+class RoleAssignmentView(ui.View):
+    def __init__(self, roles):
+        super().__init__(timeout=None)
+        for role_id, label in roles.items():
+            self.add_item(RoleAssignmentButton(int(role_id), label))
+
 class BotEvents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -96,3 +120,16 @@ class BotEvents(commands.Cog):
                     description = await generate_image_description(attachment.url, lambda x: asyncio.sleep(0))
                     await reaction.message.channel.send(f"Image Description: {description}")
                     break
+
+    @commands.command()
+    @commands.has_permissions(manage_roles=True)
+    async def create_role_message(self, ctx):
+        redis_client = redis.Redis.from_url(REDIS_URL)
+        roles_json = redis_client.get('role_assignment_roles')
+        if not roles_json:
+            await ctx.send("No roles configured for assignment. Please configure them on the website.")
+            return
+
+        roles = json.loads(roles_json)
+        view = RoleAssignmentView(roles)
+        await ctx.send("Click a button to assign or remove the corresponding role:", view=view)
