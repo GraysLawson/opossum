@@ -31,6 +31,10 @@ class DescribeImageButton(ui.Button):
                     await interaction.edit_original_response(content=chunk)
                 else:
                     await interaction.followup.send(chunk)
+            
+            # Disable the button after description is sent
+            self.disabled = True
+            await interaction.edit_original_response(view=self.view)
         except Exception as e:
             logger.error(f"Error in DescribeImageButton callback: {str(e)}")
             await interaction.edit_original_response(content="Sorry, I couldn't generate a description for this image.")
