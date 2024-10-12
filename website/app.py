@@ -1,15 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
-from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
+from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 import redis
 import json
 from datetime import datetime
 from functools import wraps
-from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
-from werkzeug.middleware.proxy_fix import ProxyFix
 import time
-from utils import get_redis_connection
 from models import User
+from config import discord, init_discord
 
 app = Flask(__name__)
 
@@ -33,10 +32,9 @@ if ENV == "development":
 else:
     # Enforce HTTPS in production
     app.config['OAUTHLIB_INSECURE_TRANSPORT'] = 0
-    # Apply ProxyFix to handle reverse proxy headers
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-discord = DiscordOAuth2Session(app)
+init_discord(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

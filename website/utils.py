@@ -1,14 +1,11 @@
 import redis
 import os
-
-REDIS_URL = os.getenv('REDIS_URL')
-
-if not REDIS_URL:
-    raise ValueError("REDIS_URL environment variable is not set")
+from config import discord
 
 def get_redis_connection():
-    return redis.Redis.from_url(REDIS_URL)
+    redis_url = os.getenv('REDIS_URL')
+    if not redis_url:
+        raise ValueError("REDIS_URL environment variable is not set")
+    return redis.from_url(redis_url)
 
-# Import discord from app to avoid circular imports
-from app import discord
-
+# Other utility functions...

@@ -6,12 +6,26 @@
     <title>OpossumBot - Discord Image Analysis</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        });
+    </script>
 </head>
-<body class="bg-gray-100 font-sans">
-    <header class="bg-indigo-600 text-white shadow-lg">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+    <header class="bg-indigo-600 dark:bg-indigo-800 text-white shadow-lg">
         <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
             <a href="{{ url_for('index') }}" class="text-2xl font-bold">OpossumBot</a>
-            <div>
+            <div class="flex items-center">
                 <a href="{{ url_for('index') }}" class="px-4 py-2 hover:text-indigo-200">Home</a>
                 {% if current_user.is_authenticated %}
                     <a href="{{ url_for('logs') }}" class="px-4 py-2 hover:text-indigo-200">Logs</a>
@@ -20,13 +34,27 @@
                 {% else %}
                     <a href="{{ url_for('login') }}" class="px-4 py-2 bg-indigo-500 rounded hover:bg-indigo-400">Login</a>
                 {% endif %}
+                <button onclick="toggleTheme()" class="ml-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
             </div>
         </nav>
     </header>
+    {% if current_user.is_authenticated and request.endpoint == 'config' %}
+    <div class="bg-gray-200 dark:bg-gray-800 py-2">
+        <div class="container mx-auto px-6 flex space-x-4">
+            <a href="{{ url_for('config_tokens') }}" class="text-sm px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600">Tokens/API Keys</a>
+            <a href="{{ url_for('config_channels') }}" class="text-sm px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600">Active Channels</a>
+            <a href="{{ url_for('config_model') }}" class="text-sm px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600">OpenAI Model</a>
+        </div>
+    </div>
+    {% endif %}
     <main class="container mx-auto px-6 py-8">
         {% block content %}{% endblock %}
     </main>
-    <footer class="bg-gray-800 text-white py-4">
+    <footer class="bg-gray-800 dark:bg-gray-950 text-white py-4">
         <div class="container mx-auto px-6 text-center">
             <p>&copy; 2023 OpossumBot. All rights reserved.</p>
         </div>

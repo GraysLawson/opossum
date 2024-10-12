@@ -5,17 +5,55 @@ body {
 }
 
 header, footer {
-    background-color: #222;
-    color: #fff;
     padding: 10px;
 }
 
 nav a {
-    color: #fff;
     text-decoration: none;
     margin: 0 5px;
 }
 
 main {
     padding: 20px;
+}
+
+/* Dark mode styles */
+.dark body {
+    background-color: #1a202c;
+    color: #e2e8f0;
+}
+
+.dark header, .dark footer {
+    background-color: #2d3748;
+}
+
+.dark nav a {
+    color: #e2e8f0;
+}
+
+.dark .bg-white {
+    background-color: #2d3748;
+}
+
+.dark .text-gray-900 {
+    color: #e2e8f0;
+}
+
+.dark .border-gray-200 {
+    border-color: #4a5568;
+}
+
+.dark input[type="text"], .dark input[type="password"], .dark select {
+    background-color: #4a5568;
+    color: #e2e8f0;
+    border-color: #718096;
+}
+
+.dark input[type="submit"], .dark button {
+    background-color: #4299e1;
+    color: #e2e8f0;
+}
+
+.dark input[type="submit"]:hover, .dark button:hover {
+    background-color: #3182ce;
 }
