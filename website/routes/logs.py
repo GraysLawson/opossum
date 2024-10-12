@@ -3,6 +3,7 @@ from flask_login import login_required
 from utils import get_redis_connection
 import json
 import time
+import redis
 
 logs_bp = Blueprint('logs', __name__)
 
@@ -24,13 +25,21 @@ def stream_logs():
         redis_client = get_redis_connection()
         last_id = 0
         while True:
-            logs = redis_client.lrange('bot_logs', 0, -1)
-            if logs:
-                for log in reversed(logs):
-                    log_data = json.loads(log)
-                    if int(log_data['timestamp']) > last_id:
-                        last_id = int(log_data['timestamp'])
-                        yield f"data: {json.dumps(log_data)}\n\n"
-            yield ":\n\n"  # Send a keep-alive message
+            try:
+                logs = redis_client.lrange('bot_logs', 0, -1)
+                if logs:
+                    for log in reversed(logs):
+                        log_data = json.loads(log)
+                        if int(log_data['timestamp']) > last_id:
+                            last_id = int(log_data['timestamp'])
+                            yield f"data: {json.dumps(log_data)}\n\n"
+                yield ":\n\n"  # Send a keep-alive message
+            except redis.exceptions.TimeoutError:
+                # Handle Redis timeout
+                yield "data: {\"error\": \"Redis timeout. Retrying...\"}\n\n"
+            except Exception as e:
+                # Handle other exceptions
+                yield f"data: {{\"error\": \"An error occurred: {str(e)}\"}}\n\n"
+            time.sleep(1)  # Add a small delay to prevent excessive CPU usage
 
     return Response(generate(), mimetype='text/event-stream')
