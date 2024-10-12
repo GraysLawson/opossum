@@ -7,6 +7,7 @@ import requests
 from openai import AsyncOpenAI
 import redis
 import os
+import json
 
 # Initialize the OpenAI client
 client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -74,3 +75,8 @@ def increment_version():
         new_version = f"{major}.{minor}.{patch}"
     redis_client.set('bot_version', new_version)
     return new_version
+
+async def update_guild_list(bot):
+    guild_ids = [str(guild.id) for guild in bot.guilds]
+    redis_client.set('bot_guild_ids', json.dumps(guild_ids))
+    logger.info(f"Updated guild list in Redis: {guild_ids}")

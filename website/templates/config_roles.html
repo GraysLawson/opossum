@@ -1,17 +1,28 @@
 {% extends 'config.html' %}
 
 {% block config_content %}
-<h3 class="text-xl font-semibold mb-4">Role Assignment Configuration</h3>
-<form method="post">
-    {% for role in all_roles %}
-    <div class="mb-2">
-        <input type="checkbox" id="role_{{ role.id }}" name="roles" value="{{ role.id }}"
-               {% if role.id|string in selected_roles %}checked{% endif %}>
-        <label for="role_{{ role.id }}">{{ role.name }}</label>
-        <input type="hidden" name="role_ids" value="{{ role.id }}">
-        <input type="hidden" name="role_names" value="{{ role.name }}">
-    </div>
-    {% endfor %}
-    <input type="submit" value="Save" class="px-4 py-2 bg-pink-400 text-white rounded hover:bg-pink-500">
+<h3 class="text-xl font-semibold mb-4">Role Configuration</h3>
+<form method="get">
+    <label for="guild_id">Select Server:</label>
+    <select name="guild_id" id="guild_id" onchange="this.form.submit()" class="mb-2 p-2 border rounded">
+        {% for guild in guilds %}
+            <option value="{{ guild.id }}" {% if guild.id == selected_guild_id %}selected{% endif %}>{{ guild.name }}</option>
+        {% endfor %}
+    </select>
 </form>
+
+{% if selected_guild_id %}
+<form method="post">
+    <input type="hidden" name="guild_id" value="{{ selected_guild_id }}">
+    {% for role in all_roles %}
+        <div>
+            <input type="checkbox" id="role_{{ role.id }}" name="roles" value="{{ role.id }}" {% if role.id in selected_roles %}checked{% endif %}>
+            <label for="role_{{ role.id }}">{{ role.name }}</label>
+            <input type="hidden" name="role_ids" value="{{ role.id }}">
+            <input type="hidden" name="role_names" value="{{ role.name }}">
+        </div>
+    {% endfor %}
+    <input type="submit" value="Save" class="px-4 py-2 bg-pink-400 text-white rounded hover:bg-pink-500 mt-4">
+</form>
+{% endif %}
 {% endblock %}

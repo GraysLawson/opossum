@@ -7,7 +7,7 @@ from commands import BotCommands
 from logger import setup_logger
 import asyncio
 import signal
-from utils import increment_version
+from utils import increment_version, update_guild_list
 
 # Set up the logger
 logger = setup_logger()
@@ -26,6 +26,18 @@ async def main():
 
     await bot.add_cog(BotEvents(bot))
     await bot.add_cog(BotCommands(bot))
+
+    @bot.event
+    async def on_ready():
+        await update_guild_list(bot)
+
+    @bot.event
+    async def on_guild_join(guild):
+        await update_guild_list(bot)
+
+    @bot.event
+    async def on_guild_remove(guild):
+        await update_guild_list(bot)
 
     # Set up signal handlers
     loop = asyncio.get_event_loop()
