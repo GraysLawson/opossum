@@ -9,10 +9,8 @@ from openai import AsyncOpenAI
 # Initialize the OpenAI client
 client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-async def generate_image_description(image_url, progress_callback):
+async def generate_image_description(image_url):
     try:
-        await progress_callback("Initializing image analysis...")
-        
         # Download the image
         response = requests.get(image_url)
         image_data = base64.b64encode(response.content).decode('utf-8')
@@ -41,8 +39,6 @@ async def generate_image_description(image_url, progress_callback):
         )
         
         logger.info(f"Received response from OpenAI API: {response}")
-        
-        await progress_callback("Generating description...")
         
         # Extract the description from the response
         description = response.choices[0].message.content.strip()

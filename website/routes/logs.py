@@ -31,7 +31,6 @@ def stream_logs():
                     if int(log_data['timestamp']) > last_id:
                         last_id = int(log_data['timestamp'])
                         yield f"data: {json.dumps(log_data)}\n\n"
-            time.sleep(1)
+            yield ":\n\n"  # Send a keep-alive message
 
     return Response(generate(), mimetype='text/event-stream')
-
