@@ -39,9 +39,9 @@ class DescribeImageButton(ui.Button):
             logger.error(f"Error in DescribeImageButton callback: {str(e)}")
             await interaction.edit_original_response(content="Sorry, I couldn't generate a description for this image.")
 
-class RoleAssignmentButton(ui.Button):
+class RoleAssignmentButton(discord.ui.Button):
     def __init__(self, role_id: int, label: str):
-        super().__init__(style=ButtonStyle.primary, label=label)
+        super().__init__(style=discord.ButtonStyle.primary, label=label)
         self.role_id = role_id
 
     async def callback(self, interaction: discord.Interaction):
@@ -57,7 +57,7 @@ class RoleAssignmentButton(ui.Button):
             await interaction.user.add_roles(role)
             await interaction.response.send_message(f"Added {role.name} role.", ephemeral=True)
 
-class RoleAssignmentView(ui.View):
+class RoleAssignmentView(discord.ui.View):
     def __init__(self, roles):
         super().__init__(timeout=None)
         for role_id, label in roles.items():
