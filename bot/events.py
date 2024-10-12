@@ -21,7 +21,7 @@ class DescribeImageButton(ui.Button):
             await message.edit(content=text)
 
         try:
-            # Await the asynchronous function directly
+            # Await the updated asynchronous function
             description = await generate_image_description(self.image_url, update_message)
             await message.edit(content=f"Image Description: {description}")
         except Exception as e:
@@ -42,7 +42,7 @@ class BotEvents(commands.Cog):
     async def update_channel_list(self):
         channels = []
         for guild in self.bot.guilds:
-            for channel in guild.text_channels:
+            for channel in guild.channels:
                 channels.append({
                     'id': str(channel.id),
                     'name': channel.name,
@@ -81,7 +81,6 @@ class BotEvents(commands.Cog):
             for attachment in reaction.message.attachments:
                 if any(attachment.filename.lower().endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif']):
                     logger.info(f"Generating image description for {attachment.filename}")
-                    # Await the asynchronous function
                     description = await generate_image_description(attachment.url, lambda x: asyncio.sleep(0))
                     await reaction.message.channel.send(f"Image Description: {description}")
                     break
