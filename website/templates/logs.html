@@ -13,7 +13,7 @@
     const logContainer = document.getElementById('log-container');
     const logContent = document.getElementById('log-content');
 
-    const eventSource = new EventSource("{{ url_for('stream_logs') }}");
+    const eventSource = new EventSource("{{ url_for('logs.stream_logs') }}");
 
     eventSource.onmessage = function(event) {
         const log = JSON.parse(event.data);
