@@ -57,3 +57,23 @@ main {
 .dark input[type="submit"]:hover, .dark button:hover {
     background-color: #3182ce;
 }
+
+.dark .bg-pink-300 {
+    background-color: #f8a5c2;
+}
+
+.dark .bg-pink-400 {
+    background-color: #f78fb3;
+}
+
+.dark .bg-pink-500 {
+    background-color: #f56fa1;
+}
+
+.dark .hover\:bg-pink-500:hover {
+    background-color: #f56fa1;
+}
+
+.dark .text-pink-100 {
+    color: #fce4ec;
+}
