@@ -15,18 +15,13 @@ class DescribeImageButton(ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False, thinking=True)
-        message = await interaction.followup.send("Analyzing the image...")
-
-        async def update_message(text):
-            await message.edit(content=text)
 
         try:
-            # Await the updated asynchronous function
-            description = await generate_image_description(self.image_url, update_message)
-            await message.edit(content=f"Image Description: {description}")
+            description = await generate_image_description(self.image_url)
+            await interaction.followup.edit_message(interaction.message.id, content=f"Image Description: {description}")
         except Exception as e:
             logger.error(f"Error in DescribeImageButton callback: {str(e)}")
-            await message.edit(content="Sorry, I couldn't generate a description for this image.")
+            await interaction.followup.edit_message(interaction.message.id, content="Sorry, I couldn't generate a description for this image.")
 
 class BotEvents(commands.Cog):
     def __init__(self, bot):
