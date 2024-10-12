@@ -2,6 +2,9 @@ import openai
 from config import OPENAI_API_KEY, OPENAI_MODEL
 from logger import logger
 import asyncio
+import base64
+import requests
+from openai import AsyncOpenAI
 
 # Initialize the OpenAI client
 client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
@@ -10,19 +13,28 @@ async def generate_image_description(image_url, progress_callback):
     try:
         await progress_callback("Initializing image analysis...")
         
-        # Define the prompt
-        prompt = f"Describe this image in detail: {image_url}"
+        # Download the image
+        response = requests.get(image_url)
+        image_data = base64.b64encode(response.content).decode('utf-8')
         
-        logger.info(f"Sending request to OpenAI API with prompt: {prompt}")
         logger.info(f"Using OpenAI model: {OPENAI_MODEL}")
         
-        # Use the new async API
+        # Use the new async API with vision capabilities
+        client = AsyncOpenAI(api_key=OPENAI_API_KEY)
         response = await client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model="gpt-4o-mini",  # Use the vision-capable model
             messages=[
                 {
                     "role": "user",
-                    "content": prompt
+                    "content": [
+                        {"type": "text", "text": "Describe this image in detail:"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_data}"
+                            }
+                        }
+                    ]
                 }
             ],
             max_tokens=300

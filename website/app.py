@@ -136,7 +136,7 @@ def config():
         channels_json = redis_client.get('discord_channels')
         channels = json.loads(channels_json) if channels_json else []
 
-        available_models = ['gpt-4o-mini', 'gpt-4o', 'chatgpt-4o-latest']
+        available_models = ['gpt-4o-mini', 'gpt-4o', 'chatgpt-4o-latest', 'gpt-4-vision-preview']
         
         return render_template('config.html', 
                                discord_token=discord_token, 
