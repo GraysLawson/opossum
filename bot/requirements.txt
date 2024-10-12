@@ -1,6 +1,7 @@
 discord.py
-openai>=1.51.2
+openai==1.51.2
 psycopg2-binary
 python-dotenv
 redis
 Flask-Login
+

@@ -3,8 +3,8 @@ from config import OPENAI_API_KEY, OPENAI_MODEL
 from logger import logger
 import asyncio
 
-# Properly set the OpenAI API key
-openai.api_key = OPENAI_API_KEY
+# Initialize the OpenAI client
+client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 async def generate_image_description(image_url, progress_callback):
     try:
@@ -13,9 +13,8 @@ async def generate_image_description(image_url, progress_callback):
         # Define the prompt
         prompt = f"Describe this image in detail: {image_url}"
         
-        # Use asyncio.to_thread to run the synchronous call without blocking
-        response = await asyncio.to_thread(
-            openai.ChatCompletion.create,
+        # Use the new async API
+        response = await client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
                 {
@@ -29,7 +28,7 @@ async def generate_image_description(image_url, progress_callback):
         await progress_callback("Generating description...")
         
         # Extract the description from the response
-        description = response.choices[0].message['content'].strip()
+        description = response.choices[0].message.content.strip()
         
         return description
     except Exception as e:
