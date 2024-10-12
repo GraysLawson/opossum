@@ -11,7 +11,7 @@ DISCORD_CLIENT_ID = os.environ['DISCORD_CLIENT_ID']
 DISCORD_CLIENT_SECRET = os.environ['DISCORD_CLIENT_SECRET']
 DISCORD_REDIRECT_URI = os.environ['DISCORD_REDIRECT_URI']
 
-DISCORD_GUILD_ID = os.environ['DISCORD_GUILD_ID']
+DISCORD_GUILD_ID = os.environ.get('DISCORD_GUILD_ID')
 
 if not DISCORD_TOKEN:
     raise ValueError("Discord token not provided")

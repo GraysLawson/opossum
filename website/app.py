@@ -8,7 +8,7 @@ from datetime import datetime
 from functools import wraps
 import time
 from models import User
-from config import discord, init_discord, DISCORD_TOKEN
+from config import discord, init_discord
 import requests
 
 app = Flask(__name__)
@@ -71,7 +71,8 @@ def config_roles():
     else:
         # Fetch roles from Discord API
         guild_id = os.getenv('DISCORD_GUILD_ID')
-        headers = {'Authorization': f'Bot {DISCORD_TOKEN}'}
+        discord_token = os.getenv('DISCORD_TOKEN')
+        headers = {'Authorization': f'Bot {discord_token}'}
         response = requests.get(f'https://discord.com/api/v10/guilds/{guild_id}/roles', headers=headers)
         all_roles = response.json()
 
