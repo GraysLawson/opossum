@@ -3,7 +3,6 @@ from discord.ext import commands
 import os
 from config import DISCORD_TOKEN, VERSION
 from events import BotEvents
-from commands import BotCommands
 from logger import setup_logger
 import asyncio
 import signal
@@ -31,8 +30,8 @@ async def main():
     
     logger.info(f"Bot version: {new_version}")
 
-    await bot.add_cog(BotEvents(bot))
-    await bot.add_cog(BotCommands(bot))
+    # Correctly add the cog without awaiting
+    bot.add_cog(BotEvents(bot))
 
     @bot.event
     async def on_ready():

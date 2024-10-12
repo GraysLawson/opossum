@@ -186,7 +186,6 @@ async def update_channel_list(self):
                 if message_id:
                     try:
                         message = await channel.fetch_message(int(message_id))
-                        # Update message content and view if necessary
                         view = RoleAssignmentView(roles)
                         if message.content != message_format:
                             await message.edit(content=message_format, view=view)
@@ -197,7 +196,6 @@ async def update_channel_list(self):
                         config['message_id'] = str(message.id)
                         self.redis_client.set(key, json.dumps(config))
                 else:
-                    # No message_id, create a new message
                     view = RoleAssignmentView(roles)
                     message = await channel.send(message_format, view=view)
                     config['message_id'] = str(message.id)

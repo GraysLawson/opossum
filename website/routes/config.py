@@ -4,6 +4,7 @@ import os
 from utils import get_redis_connection
 import json
 import requests
+import logging
 
 config_bp = Blueprint('config', __name__)
 
@@ -40,6 +41,16 @@ def config_channels():
         redis_client = get_redis_connection()
         channels_json = redis_client.get('discord_channels')
         channels = json.loads(channels_json) if channels_json else []
+
+        # Ensure each channel has a 'guild_id' key
+        for channel in channels:
+            if 'guild_id' not in channel:
+                logging.error(f"Channel data missing 'guild_id': {channel}")
+                continue
+
+        # This line was causing the error because selected_guild_id was not defined in this function
+        # guild_channels = [channel for channel in channels if str(channel.get('guild_id')) == selected_guild_id]
+
         return render_template('config_channels.html', active_channels=active_channels, channels=channels)
 
 @config_bp.route('/config/model', methods=['GET', 'POST'])
@@ -74,7 +85,6 @@ def config_roles():
         # Prepare the config dictionary
         config_data = {
             'channel_id': channel_id,
-            'message_format': message_format,
             'roles': roles,
             'message_id': redis_client.get(f'role_assignment_message_id:{guild_id}').decode('utf-8') if redis_client.get(f'role_assignment_message_id:{guild_id}') else None
         }
@@ -90,55 +100,41 @@ def config_roles():
         guild_ids = json.loads(guild_ids_json) if guild_ids_json else []
         selected_guild_id = request.args.get('guild_id', guild_ids[0] if guild_ids else None)
 
-        if selected_guild_id:
-            # Fetch roles
-            bot_token = os.getenv('DISCORD_TOKEN')
-            headers = {'Authorization': f'Bot {bot_token}'}
-            response = requests.get(f'https://discord.com/api/v10/guilds/{selected_guild_id}/roles', headers=headers)
-            all_roles = response.json() if response.status_code == 200 else []
+        if not selected_guild_id:
+            flash('No guilds available for configuration.', 'error')
+            return redirect(url_for('config.config'))
 
-            # Fetch current config
-            config_json = redis_client.get(f'role_assignment_config:{selected_guild_id}')
-            if config_json:
-                config = json.loads(config_json)
-                selected_roles = config.get('roles', {})
-                channel_id = config.get('channel_id', '')
-                message_format = config.get('message_format', '')
-            else:
-                selected_roles = {}
-                channel_id = ''
-                message_format = ''
+        # Fetch roles
+        bot_token = os.getenv('DISCORD_TOKEN')
+        headers = {'Authorization': f'Bot {bot_token}'}
+        response = requests.get(f'https://discord.com/api/v10/guilds/{selected_guild_id}/roles', headers=headers)
+        all_roles = response.json() if response.status_code == 200 else []
 
-            # Fetch channels for the guild
-            channels_json = redis_client.get('discord_channels')
-            channels = json.loads(channels_json) if channels_json else []
-            guild_channels = [channel for channel in channels if str(channel['guild_id']) == selected_guild_id]
-
-            return render_template(
-                'config_roles.html',
-                guilds=guild_ids,
-                selected_guild_id=selected_guild_id,
-                all_roles=all_roles,
-                selected_roles=selected_roles,
-                channels=guild_channels,
-                channel_id=channel_id,
-                message_format=message_format
-            )
-
+        # Fetch current config
+        config_json = redis_client.get(f'role_assignment_config:{selected_guild_id}')
+        if config_json:
+            config = json.loads(config_json)
+            selected_roles = config.get('roles', {})
+            channel_id = config.get('channel_id', '')
+            message_format = config.get('message_format', '')
         else:
-            all_roles = []
             selected_roles = {}
-            channels = []
             channel_id = ''
             message_format = ''
 
-            return render_template(
-                'config_roles.html',
-                guilds=guild_ids,
-                selected_guild_id=None,
-                all_roles=all_roles,
-                selected_roles=selected_roles,
-                channels=channels,
-                channel_id=channel_id,
-                message_format=message_format
-            )
+        # Fetch channels for the guild
+        channels_json = redis_client.get('discord_channels')
+        channels = json.loads(channels_json) if channels_json else []
+
+        guild_channels = [channel for channel in channels if str(channel.get('guild_id')) == selected_guild_id]
+
+        return render_template(
+            'config_roles.html',
+            guilds=guild_ids,
+            selected_guild_id=selected_guild_id,
+            all_roles=all_roles,
+            selected_roles=selected_roles,
+            channels=guild_channels,
+            channel_id=channel_id,
+            message_format=message_format
+        )
