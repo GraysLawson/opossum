@@ -3,6 +3,8 @@
     --pastel-pink-dark: #D687B1;
     --pastel-purple-light: #E6E6FA;
     --pastel-purple-dark: #B19CD9;
+    --dark-bg: #1a202c;
+    --dark-text: #e2e8f0;
 }
 
 body {
@@ -13,21 +15,21 @@ body {
 }
 
 header {
-    background-color: var(--pastel-pink-light);
+    background: linear-gradient(to right, var(--pastel-pink-light), var(--pastel-purple-light));
     color: #333;
 }
 
 .dark header {
-    background-color: var(--pastel-pink-dark);
-    color: #fff;
+    background: var(--dark-bg);
+    color: var(--dark-text);
 }
 
 nav a:hover {
-    color: var(--pastel-purple-light);
+    color: var(--pastel-purple-dark);
 }
 
 .dark nav a:hover {
-    color: var(--pastel-purple-dark);
+    color: var(--pastel-purple-light);
 }
 
 .bg-pink-300 {
@@ -43,15 +45,15 @@ nav a:hover {
 }
 
 .dark .bg-pink-400 {
-    background-color: var(--pastel-purple-dark);
+    background-color: var(--pastel-purple-light);
 }
 
 .hover\:bg-pink-500:hover {
-    background-color: var(--pastel-pink-light);
+    background-color: var(--pastel-pink-dark);
 }
 
 .dark .hover\:bg-pink-500:hover {
-    background-color: var(--pastel-pink-dark);
+    background-color: var(--pastel-pink-light);
 }
 
 footer {
@@ -69,16 +71,8 @@ main {
 
 /* Dark mode styles */
 .dark body {
-    background-color: #1a202c;
-    color: #e2e8f0;
-}
-
-.dark header, .dark footer {
-    background-color: #2d3748;
-}
-
-.dark nav a {
-    color: #e2e8f0;
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
 }
 
 .dark .bg-white {
@@ -86,7 +80,7 @@ main {
 }
 
 .dark .text-gray-900 {
-    color: #e2e8f0;
+    color: var(--dark-text);
 }
 
 .dark .border-gray-200 {
@@ -95,33 +89,44 @@ main {
 
 .dark input[type="text"], .dark input[type="password"], .dark select {
     background-color: #4a5568;
-    color: #e2e8f0;
+    color: var(--dark-text);
     border-color: #718096;
 }
 
 .dark input[type="submit"], .dark button {
-    background-color: #4299e1;
-    color: #e2e8f0;
+    background-color: var(--pastel-purple-light);
+    color: #333;
 }
 
 .dark input[type="submit"]:hover, .dark button:hover {
-    background-color: #3182ce;
+    background-color: var(--pastel-purple-dark);
 }
 
-.dark .bg-pink-300 {
-    background-color: #9b2c2c;
+/* Configuration sub-menu styles */
+.config-submenu {
+    background: linear-gradient(to right, var(--pastel-pink-light), var(--pastel-purple-light));
 }
 
-.dark .bg-pink-400 {
-    background-color: #f56fa1;
+.dark .config-submenu {
+    background: linear-gradient(to right, var(--pastel-pink-dark), var(--pastel-purple-dark));
 }
 
-.dark .hover\:bg-pink-500:hover {
-    background-color: #742a2a;
+.config-submenu a {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #333;
 }
 
-.dark .bg-pink-500 {
-    background-color: #f56fa1;
+.dark .config-submenu a {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: var(--dark-text);
+}
+
+.config-submenu a:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.dark .config-submenu a:hover {
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 /* Log styles */

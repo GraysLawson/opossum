@@ -19,7 +19,15 @@ class DescribeImageButton(ui.Button):
         try:
             await interaction.edit_original_response(content="Analyzing the image...")
             description = await generate_image_description(self.image_url)
-            await interaction.edit_original_response(content=f"Image Description: {description}")
+            
+            # Split the description into chunks of 2000 characters or less
+            chunks = [description[i:i+2000] for i in range(0, len(description), 2000)]
+            
+            for i, chunk in enumerate(chunks):
+                if i == 0:
+                    await interaction.edit_original_response(content=chunk)
+                else:
+                    await interaction.followup.send(chunk)
         except Exception as e:
             logger.error(f"Error in DescribeImageButton callback: {str(e)}")
             await interaction.edit_original_response(content="Sorry, I couldn't generate a description for this image.")

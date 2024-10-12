@@ -25,7 +25,7 @@ async def generate_image_description(image_url):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Describe this image in detail:"},
+                        {"type": "text", "text": "Describe this image in detail and provide up to 3 potentially helpful links related to the main subject of the image. Format the response as: Description: [description] Links: [link1], [link2], [link3]"},
                         {
                             "type": "image_url",
                             "image_url": {
@@ -35,17 +35,22 @@ async def generate_image_description(image_url):
                     ]
                 }
             ],
-            max_tokens=300
+            max_tokens=500
         )
         
         logger.info(f"Received response from OpenAI API: {response}")
         
-        # Extract the description from the response
-        description = response.choices[0].message.content.strip()
+        # Extract the description and links from the response
+        content = response.choices[0].message.content.strip()
+        description_part, links_part = content.split("Links:", 1)
+        description = description_part.replace("Description:", "").strip()
+        links = [link.strip() for link in links_part.split(",")]
         
-        logger.info(f"Generated description: {description}")
+        formatted_response = f"Image Description: {description}\n\nHelpful Links:\n" + "\n".join(f"- {link}" for link in links)
         
-        return description
+        logger.info(f"Generated response: {formatted_response}")
+        
+        return formatted_response
     except Exception as e:
         logger.error(f"Error generating image description: {str(e)}", exc_info=True)
         return "Sorry, I couldn't generate a description for this image."
