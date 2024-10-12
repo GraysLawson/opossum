@@ -30,6 +30,9 @@ async def main():
     @bot.event
     async def on_ready():
         await update_guild_list(bot)
+        logger.info(f"{bot.user.name} has connected to Discord.")
+        logger.info(f"Version: {bot.version}")
+        await bot.change_presence(activity=discord.Game(name=f"v{bot.version}"))
 
     @bot.event
     async def on_guild_join(guild):

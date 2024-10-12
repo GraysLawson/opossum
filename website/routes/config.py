@@ -78,13 +78,13 @@ def config_roles():
 
         guilds = []
         for guild_id in guild_ids:
-            response = requests.get(f'https://discord.com/api/v8/guilds/{guild_id}', headers=headers)
+            response = requests.get(f'https://discord.com/api/v10/guilds/{guild_id}', headers=headers)
             if response.status_code == 200:
                 guild_data = response.json()
                 guilds.append({'id': guild_id, 'name': guild_data['name']})
 
         if selected_guild_id:
-            response = requests.get(f'https://discord.com/api/v8/guilds/{selected_guild_id}/roles', headers=headers)
+            response = requests.get(f'https://discord.com/api/v10/guilds/{selected_guild_id}/roles', headers=headers)
             all_roles = response.json() if response.status_code == 200 else []
 
             selected_roles_json = redis_client.get(f'role_assignment_roles:{selected_guild_id}')

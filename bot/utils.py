@@ -78,5 +78,6 @@ def increment_version():
 
 async def update_guild_list(bot):
     guild_ids = [str(guild.id) for guild in bot.guilds]
+    redis_client = redis.Redis.from_url(os.environ['REDIS_URL'])
     redis_client.set('bot_guild_ids', json.dumps(guild_ids))
     logger.info(f"Updated guild list in Redis: {guild_ids}")
