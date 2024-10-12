@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import os
 import redis
@@ -7,6 +7,7 @@ from datetime import datetime
 from functools import wraps
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
+import time
 
 app = Flask(__name__)
 
@@ -144,6 +145,24 @@ def config():
                                openai_model=openai_model,
                                available_models=available_models,
                                channels=channels)
+
+@app.route('/stream-logs')
+@login_required_decorator
+def stream_logs():
+    def generate():
+        redis_client = get_redis_connection()
+        last_id = 0
+        while True:
+            logs = redis_client.lrange('bot_logs', 0, -1)
+            if logs:
+                for log in reversed(logs):
+                    log_data = json.loads(log)
+                    if int(log_data['timestamp']) > last_id:
+                        last_id = int(log_data['timestamp'])
+                        yield f"data: {json.dumps(log_data)}\n\n"
+            time.sleep(1)
+
+    return Response(generate(), mimetype='text/event-stream')
 
 @app.errorhandler(Unauthorized)
 def redirect_unauthorized(e):

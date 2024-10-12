@@ -3,6 +3,7 @@ import os
 import redis
 import sys
 import json
+import time
 
 class RedisHandler(logging.Handler):
     def __init__(self):
@@ -18,11 +19,12 @@ class RedisHandler(logging.Handler):
         log_entry = self.format(record)
         try:
             log_data = {
-                'timestamp': record.created,
+                'timestamp': int(time.time() * 1000),  # Use milliseconds for easier ordering
                 'level': record.levelname,
                 'message': log_entry
             }
             self.redis_client.lpush('bot_logs', json.dumps(log_data))
+            self.redis_client.ltrim('bot_logs', 0, 999)  # Keep only the last 1000 logs
         except Exception as e:
             print(f"Error inserting log: {str(e)}", file=sys.stderr)
             self.handleError(record)

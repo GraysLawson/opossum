@@ -5,22 +5,26 @@
 {% if error %}
     <p class="error">{{ error }}</p>
 {% endif %}
-{% if logs %}
-    <table>
-        <tr>
-            <th>Timestamp</th>
-            <th>Level</th>
-            <th>Message</th>
-        </tr>
-    {% for log in logs %}
-        <tr>
-            <td>{{ log.timestamp }}</td>
-            <td>{{ log.level }}</td>
-            <td>{{ log.message }}</td>
-        </tr>
-    {% endfor %}
-    </table>
-{% else %}
-    <p>No logs available.</p>
-{% endif %}
+<div id="log-container" class="bg-gray-100 p-4 rounded-lg shadow-inner h-96 overflow-y-auto">
+    <pre id="log-content" class="text-sm"></pre>
+</div>
+
+<script>
+    const logContainer = document.getElementById('log-container');
+    const logContent = document.getElementById('log-content');
+
+    const eventSource = new EventSource("{{ url_for('stream_logs') }}");
+
+    eventSource.onmessage = function(event) {
+        const log = JSON.parse(event.data);
+        const logEntry = `${log.timestamp} - ${log.level} - ${log.message}\n`;
+        logContent.textContent += logEntry;
+        logContainer.scrollTop = logContainer.scrollHeight;
+    };
+
+    eventSource.onerror = function(error) {
+        console.error("EventSource failed:", error);
+        eventSource.close();
+    };
+</script>
 {% endblock %}
