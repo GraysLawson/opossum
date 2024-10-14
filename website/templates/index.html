@@ -1,29 +1,55 @@
-{% extends 'base.html' %}
+{{% extends 'base.html' %}
 
 {% block content %}
 <div class="text-center">
     <h1 class="text-4xl font-bold mb-8">Welcome to OpossumBot</h1>
-    <p class="text-xl mb-8">Your intelligent Discord companion for image analysis</p>
+    <div class="flex justify-center items-center mb-8">
+        <img src="{{ url_for('static', filename='images/opossum.png') }}" alt="Opossum" class="w-24 h-24 mr-4">
+        <img src="{{ url_for('static', filename='images/discord-logo.png') }}" alt="Discord Logo" class="w-24 h-24">
+    </div>
+    <p class="text-xl mb-8">Your intelligent Discord companion for image analysis and server management</p>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <h2 class="text-2xl font-semibold mb-4">Features</h2>
         <ul class="list-disc list-inside">
             <li>Automatic image detection in Discord channels</li>
             <li>Generate detailed descriptions of uploaded images</li>
             <li>Customizable active channels</li>
             <li>Easy configuration through web interface</li>
+            <li>Role assignment system with customizable buttons</li>
+            <li>OpenAI model selection for image analysis</li>
         </ul>
     </div>
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <h2 class="text-2xl font-semibold mb-4">How It Works</h2>
         <ol class="list-decimal list-inside">
             <li>Upload an image to a Discord channel</li>
             <li>OpossumBot detects the image</li>
             <li>Click the "Describe Image" button</li>
             <li>Receive a detailed description of the image</li>
+            <li>Use role assignment buttons to manage server roles</li>
+            <li>Configure bot settings through the web interface</li>
         </ol>
     </div>
+</div>
+
+<div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <h2 class="text-2xl font-semibold mb-4">New Features</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <h3 class="text-xl font-semibold mb-2">Role Assignment</h3>
+            <p>Easily manage server roles with customizable buttons. Users can assign or remove roles with a single click.</p>
+        </div>
+        <div>
+            <h3 class="text-xl font-semibold mb-2">OpenAI Model Selection</h3>
+            <p>Choose from various OpenAI models for image analysis, allowing you to balance between accuracy and performance.</p>
+        </div>
+    </div>
+</div>
+
+<div class="mt-8 text-center">
+    <img src="{{ url_for('static', filename='images/opossum-discord.png') }}" alt="Opossum using Discord" class="mx-auto w-64 h-64">
 </div>
 {% endblock %}
